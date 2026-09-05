@@ -1,0 +1,11 @@
+{
+  "name": "clothingmart",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A professional full-stack e-commerce platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {}
+}
