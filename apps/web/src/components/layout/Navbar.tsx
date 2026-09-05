@@ -1,62 +1,54 @@
 import Link from "next/link";
+import Container from "@/components/ui/Container";
+
+const navigation = [
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/shop" },
+  { label: "Categories", href: "/categories" },
+  { label: "About", href: "/about" },
+];
 
 export default function Navbar() {
   return (
-    <header className="border-b border-neutral-200 bg-white">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="text-xl font-bold tracking-tight text-neutral-900"
-        >
-          ClothingMart
-        </Link>
-
-        <nav className="hidden items-center gap-8 md:flex">
+    <header className="sticky top-0 z-50 border-b border-neutral-200/80 bg-white/95 backdrop-blur">
+      <Container>
+        <div className="flex h-16 items-center justify-between">
           <Link
             href="/"
-            className="text-sm font-medium text-neutral-700 transition hover:text-neutral-900"
+            className="text-xl font-bold tracking-[-0.04em] text-neutral-950"
           >
-            Home
+            ClothingMart
           </Link>
 
-          <Link
-            href="/shop"
-            className="text-sm font-medium text-neutral-700 transition hover:text-neutral-900"
-          >
-            Shop
-          </Link>
+          <nav className="hidden items-center gap-8 md:flex">
+            {navigation.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
 
-          <Link
-            href="/categories"
-            className="text-sm font-medium text-neutral-700 transition hover:text-neutral-900"
-          >
-            Categories
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/login"
+              className="hidden text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950 sm:block"
+            >
+              Login
+            </Link>
 
-          <Link
-            href="/about"
-            className="text-sm font-medium text-neutral-700 transition hover:text-neutral-900"
-          >
-            About
-          </Link>
-        </nav>
-
-        <div className="flex items-center gap-4">
-          <Link
-            href="/login"
-            className="hidden text-sm font-medium text-neutral-700 transition hover:text-neutral-900 sm:block"
-          >
-            Login
-          </Link>
-
-          <Link
-            href="/cart"
-            className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-neutral-800"
-          >
-            Cart
-          </Link>
+            <Link
+              href="/cart"
+              className="rounded-full bg-neutral-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800"
+            >
+              Cart
+            </Link>
+          </div>
         </div>
-      </div>
+      </Container>
     </header>
   );
 }
