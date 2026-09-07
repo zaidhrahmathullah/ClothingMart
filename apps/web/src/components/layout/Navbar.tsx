@@ -1,5 +1,9 @@
 import Link from "next/link";
+
 import Container from "@/components/ui/Container";
+import AccountMenu from "@/features/auth/components/AccountMenu";
+import { serverApiFetch } from "@/lib/server-api";
+import type { AuthResponse } from "@/types/auth";
 
 const navigation = [
   { label: "Home", href: "/" },
@@ -8,7 +12,19 @@ const navigation = [
   { label: "About", href: "/about" },
 ];
 
-export default function Navbar() {
+async function getAuthenticatedUser() {
+  try {
+    const auth = await serverApiFetch<AuthResponse>("/auth/me");
+
+    return auth.user;
+  } catch {
+    return null;
+  }
+}
+
+export default async function Navbar() {
+  const user = await getAuthenticatedUser();
+
   return (
     <header className="sticky top-0 z-50 border-b border-neutral-200/80 bg-white/95 backdrop-blur">
       <Container>
@@ -33,12 +49,16 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="hidden text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950 sm:block"
-            >
-              Login
-            </Link>
+            {user ? (
+              <AccountMenu user={user} />
+            ) : (
+              <Link
+                href="/login"
+                className="hidden text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950 sm:block"
+              >
+                Login
+              </Link>
+            )}
 
             <Link
               href="/cart"

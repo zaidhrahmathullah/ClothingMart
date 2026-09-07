@@ -26,3 +26,6 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Generated Prisma Client
+apps/api/src/generated/
