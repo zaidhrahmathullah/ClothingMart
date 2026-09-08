@@ -5,6 +5,9 @@ import cookieParser from "cookie-parser";
 import productRoutes from "./modules/products/products.routes.js";
 import categoryRoutes from "./modules/categories/category.routes.js";
 import authRoutes from "./modules/auth/auth.routes.js";
+import cartRoutes from "./modules/cart/cart.routes.js";
+import addressRoutes from "./modules/addresses/address.routes.js";
+import orderRoutes from "./modules/orders/order.routes.js";
 
 import { errorHandler } from "./middleware/error-handler.js";
 
@@ -34,6 +37,9 @@ app.get("/api/v1/health", (_req, res) => {
 
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/categories", categoryRoutes);
+app.use("/api/v1/cart", cartRoutes);
+app.use("/api/v1/addresses", addressRoutes);
+app.use("/api/v1/orders", orderRoutes);
 
 app.use(errorHandler);
 

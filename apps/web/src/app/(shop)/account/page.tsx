@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { serverApiFetch } from "@/lib/server-api";
 import type { AuthResponse } from "@/types/auth";
+import Link from "next/link";
 
 export default async function AccountPage() {
   let auth: AuthResponse;
@@ -25,7 +26,7 @@ export default async function AccountPage() {
             Welcome, {user.name}
           </h1>
 
-          <div className="mt-8 space-y-4">
+          <div className="mt-8 space-y-4 mb-6 ">
             <div>
               <p className="text-sm text-gray-500">Name</p>
               <p className="font-medium text-gray-900">
@@ -47,6 +48,12 @@ export default async function AccountPage() {
               </p>
             </div>
           </div>
+          <Link
+              href="/orders"
+              className="rounded-xl border border-neutral-200 px-5 py-3 text-sm font-semibold transition hover:border-neutral-950"
+            >
+              My Orders
+            </Link>
         </div>
       </div>
     </main>

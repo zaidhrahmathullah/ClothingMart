@@ -84,7 +84,7 @@ export default function AccountMenu({ user }: AccountMenuProps) {
             </Link>
 
             <Link
-              href="/account/orders"
+              href="/orders"
               role="menuitem"
               onClick={() => setIsOpen(false)}
               className="block rounded-lg px-3 py-2 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"

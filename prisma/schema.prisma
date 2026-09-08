@@ -12,6 +12,22 @@ enum UserRole {
   ADMIN
 }
 
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -20,6 +36,9 @@ model User {
   role         UserRole @default(CUSTOMER)
 
   sessions AuthSession[]
+  cart     Cart?
+  addresses Address[]
+  orders    Order[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -99,6 +118,8 @@ model ProductVariant {
 
   product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
   inventory Inventory?
+  cartItems CartItem[]
+  orderItems OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -117,4 +138,129 @@ model Inventory {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CartItem {
+  id               String         @id @default(uuid())
+  cartId           String
+  productVariantId String
+  quantity         Int            @default(1)
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productVariantId])
+  @@index([cartId])
+  @@index([productVariantId])
+}
+
+model Address {
+  id         String  @id @default(uuid())
+  userId     String
+
+  fullName   String
+  phone      String
+  addressLine1 String
+  addressLine2 String?
+  city       String
+  district   String
+  postalCode String
+  country    String @default("Sri Lanka")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Order {
+  id     String @id @default(uuid())
+  userId String
+
+  status OrderStatus @default(PENDING)
+
+  subtotal   Decimal @db.Decimal(10, 2)
+  shippingFee Decimal @db.Decimal(10, 2)
+  total      Decimal @db.Decimal(10, 2)
+
+  shippingFullName   String
+  shippingPhone      String
+  shippingAddressLine1 String
+  shippingAddressLine2 String?
+  shippingCity       String
+  shippingDistrict   String
+  shippingPostalCode String
+  shippingCountry    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items OrderItem[]
+  address Address? @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  addressId String?
+
+  payment Payment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id String @id @default(uuid())
+
+  orderId String
+  productVariantId String
+
+  productName       String
+  variantDescription String
+
+  unitPrice Decimal @db.Decimal(10, 2)
+  quantity  Int
+  subtotal  Decimal @db.Decimal(10, 2)
+
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productVariantId])
+}
+
+model Payment {
+  id String @id @default(uuid())
+
+  orderId String @unique
+
+  provider String
+  status PaymentStatus @default(PENDING)
+
+  amount Decimal @db.Decimal(10, 2)
+  transactionReference String?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
 }
