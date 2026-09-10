@@ -31,7 +31,7 @@ async function main() {
       name: "Men",
       slug: "men",
       description: "Modern everyday clothing for men.",
-      imageUrl: "/images/categories/men.jpg",
+      imageUrl: null,
     },
   });
 
@@ -40,7 +40,7 @@ async function main() {
       name: "Women",
       slug: "women",
       description: "Contemporary fashion for women.",
-      imageUrl: "/images/categories/women.jpg",
+      imageUrl: null,
     },
   });
 
@@ -49,7 +49,7 @@ async function main() {
       name: "Kids",
       slug: "kids",
       description: "Comfortable and stylish clothing for kids.",
-      imageUrl: "/images/categories/kids.jpg",
+      imageUrl: null,
     },
   });
 

@@ -7,7 +7,17 @@
     "apps/*",
     "packages/*"
   ],
-  "scripts": {},
+  "scripts": {
+    "dev:frontend": "npm run dev --workspace apps/web",
+    "build:frontend": "npm run build --workspace apps/web",
+    "start:frontend": "npm run start --workspace apps/web",
+  
+    "dev:backend": "npm run dev --workspace apps/api",
+    "build:backend": "npm run build --workspace apps/api",
+    "start:backend": "npm run start --workspace apps/api",
+  
+    "build": "npm run build:frontend && npm run build:backend"
+  },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",

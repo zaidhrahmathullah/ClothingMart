@@ -1,6 +1,9 @@
-const API_URL =
+const API_URL = (
   process.env.NEXT_PUBLIC_API_URL ??
-  "http://localhost:4000/api/v1";
+  "http://localhost:4000"
+)
+  .replace(/\/+$/, "")
+  .replace(/\/api\/v1$/, "");
 
 type ApiError = {
   code: string;
@@ -17,8 +20,12 @@ export async function apiFetch<T>(
   endpoint: string,
   options?: RequestInit,
 ): Promise<T> {
+  const path = endpoint.startsWith("/")
+    ? endpoint
+    : `/${endpoint}`;
+
   const response = await fetch(
-    `${API_URL}${endpoint}`,
+    `${API_URL}/api/v1${path}`,
     {
       ...options,
       credentials: "include",
@@ -29,8 +36,25 @@ export async function apiFetch<T>(
     },
   );
 
-  const result =
-    (await response.json()) as ApiResponse<T>;
+  const contentType =
+    response.headers.get("content-type") ?? "";
+  const responseText = await response.text();
+
+  if (!contentType.includes("application/json")) {
+    throw new Error(
+      `API returned a non-JSON response (${response.status}). Check the API URL and endpoint.`,
+    );
+  }
+
+  let result: ApiResponse<T>;
+
+  try {
+    result = JSON.parse(responseText) as ApiResponse<T>;
+  } catch {
+    throw new Error(
+      `API returned invalid JSON (${response.status}). Check the API URL and endpoint.`,
+    );
+  }
 
   if (!response.ok || !result.success) {
     throw new Error(

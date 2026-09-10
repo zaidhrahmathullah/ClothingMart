@@ -3,8 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown } from "lucide-react";
-
+import { ChevronDown, Heart } from "lucide-react";
 import { logout } from "@/services/auth";
 import type { AuthUser } from "@/types/auth";
 
@@ -90,6 +89,26 @@ export default function AccountMenu({ user }: AccountMenuProps) {
               className="block rounded-lg px-3 py-2 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
             >
               My Orders
+            </Link>
+
+            {user.role === "ADMIN" && (
+              <Link
+                href="/admin"
+                role="menuitem"
+                onClick={() => setIsOpen(false)}
+                className="block rounded-lg px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+              >
+                Admin Dashboard
+              </Link>
+            )}
+
+            <Link
+              href="/wishlist"
+              role="menuitem"
+              onClick={() => setIsOpen(false)}
+              className="block rounded-lg px-3 py-2 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+            >
+              Wishlist
             </Link>
 
             <button

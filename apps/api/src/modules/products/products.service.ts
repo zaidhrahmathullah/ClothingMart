@@ -19,7 +19,7 @@ type ProductQuery = {
     | "price_desc";
 };
 
-function formatProduct(product: any) {
+export function formatProduct(product: any) {
   const variants = product.variants.map((variant: any) => ({
     id: variant.id,
     sku: variant.sku,

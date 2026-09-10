@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import ReviewSection from "@/features/reviews/components/ReviewForm";
 
 import type {
   Product,
@@ -8,6 +9,7 @@ import type {
 } from "@/types/product";
 
 import { addCartItem } from "@/services/cart";
+import WishlistButton from "@/features/wishlist/components/WishlistButton";
 
 type ProductDetailsProps = {
   product: Product;
@@ -260,6 +262,9 @@ export default function ProductDetails({
           <h1 className="mt-4 text-3xl font-bold tracking-tight text-neutral-950 sm:text-4xl">
             {product.name}
           </h1>
+          <WishlistButton
+              productId={product.id}
+          />
 
           <p className="mt-4 text-2xl font-semibold text-neutral-950">
             LKR{" "}
@@ -469,6 +474,9 @@ export default function ProductDetails({
           </button>
         </section>
       </div>
+      <ReviewSection
+          productId={product.id}
+      />
     </main>
   );
 }

@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma.js";
+import { formatProduct } from "../products/products.service.js";
 
 export async function getCategories() {
   return prisma.category.findMany({
@@ -49,10 +50,5 @@ export async function getCategoryProducts(slug: string) {
     },
   });
 
-  return products.map((product) => ({
-    ...product,
-    inStock: product.variants.some(
-      (variant) => (variant.inventory?.quantity ?? 0) > 0,
-    ),
-  }));
+  return products.map(formatProduct);
 }

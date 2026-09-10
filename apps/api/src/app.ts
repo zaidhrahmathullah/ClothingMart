@@ -8,6 +8,7 @@ import authRoutes from "./modules/auth/auth.routes.js";
 import cartRoutes from "./modules/cart/cart.routes.js";
 import addressRoutes from "./modules/addresses/address.routes.js";
 import orderRoutes from "./modules/orders/order.routes.js";
+import wishlistRoutes from "./modules/wishlist/wishlist.routes.js";
 
 import { errorHandler } from "./middleware/error-handler.js";
 
@@ -40,6 +41,7 @@ app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/addresses", addressRoutes);
 app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/wishlist", wishlistRoutes);
 
 app.use(errorHandler);
 
