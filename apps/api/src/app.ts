@@ -9,12 +9,14 @@ import cartRoutes from "./modules/cart/cart.routes.js";
 import addressRoutes from "./modules/addresses/address.routes.js";
 import orderRoutes from "./modules/orders/order.routes.js";
 import wishlistRoutes from "./modules/wishlist/wishlist.routes.js";
+import adminRoutes from "./modules/admin/admin.routes.js";
+import { uploadDirectory } from "./modules/admin/admin-upload.js";
 
 import { errorHandler } from "./middleware/error-handler.js";
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: "32mb" }));
 
 app.use(
   cors({
@@ -24,6 +26,7 @@ app.use(
 );
 
 app.use(cookieParser());
+app.use("/uploads/products", express.static(uploadDirectory));
 
 app.use("/api/v1/auth", authRoutes);
 
@@ -42,6 +45,7 @@ app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/addresses", addressRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/wishlist", wishlistRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 app.use(errorHandler);
 

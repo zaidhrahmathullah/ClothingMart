@@ -15,6 +15,7 @@ out/
 # Build output
 dist/
 build/
+apps/api/uploads/
 
 # Logs
 *.log

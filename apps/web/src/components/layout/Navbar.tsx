@@ -80,6 +80,14 @@ export default async function Navbar() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
+                {user.role === "ADMIN" && (
+                  <Link
+                    href="/admin"
+                    className="hidden text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950 sm:block"
+                  >
+                    Admin
+                  </Link>
+                )}
                 <AccountMenu user={user} />
 
                 <Link

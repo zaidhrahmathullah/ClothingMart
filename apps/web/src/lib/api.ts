@@ -65,3 +65,26 @@ export async function apiFetch<T>(
 
   return result.data as T;
 }
+
+export async function apiUpload<T>(
+  endpoint: string,
+  body: FormData,
+): Promise<T> {
+  const path = endpoint.startsWith("/")
+    ? endpoint
+    : `/${endpoint}`;
+
+  const response = await fetch(`${API_URL}/api/v1${path}`, {
+    method: "POST",
+    body,
+    credentials: "include",
+  });
+
+  const result = (await response.json()) as ApiResponse<T>;
+
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message ?? "Image upload failed");
+  }
+
+  return result.data as T;
+}

@@ -68,3 +68,4 @@ export const productQuerySchema = z.object({
     path: ["minPrice"],
   },
 );
+

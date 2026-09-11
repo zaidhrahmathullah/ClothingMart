@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import ReviewSection from "@/features/reviews/components/ReviewForm";
 
 import type {
@@ -26,49 +27,13 @@ export default function ProductDetails({
     [product.images],
   );
 
-  const colors = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          product.variants.map(
-            (variant) => variant.color,
-          ),
-        ),
-      ),
-    [product.variants],
-  );
-
-  const sizes = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          product.variants.map(
-            (variant) => variant.size,
-          ),
-        ),
-      ),
-    [product.variants],
-  );
-
-  const firstAvailableVariant =
-    product.variants.find(
-      (variant) => variant.inStock,
-    );
-
   const [selectedImageId, setSelectedImageId] =
     useState<string | null>(
       sortedImages[0]?.id ?? null,
     );
 
-  const [selectedColor, setSelectedColor] =
-    useState<string>(
-      firstAvailableVariant?.color ?? "",
-    );
-
-  const [selectedSize, setSelectedSize] =
-    useState<string>(
-      firstAvailableVariant?.size ?? "",
-    );
+  const [selectedVariantId, setSelectedVariantId] =
+    useState("");
 
   const [quantity, setQuantity] = useState(1);
 
@@ -83,15 +48,45 @@ export default function ProductDetails({
 
   const selectedVariant: ProductVariant | undefined =
     product.variants.find(
-      (variant) =>
-        variant.color === selectedColor &&
-        variant.size === selectedSize,
+      (variant) => variant.id === selectedVariantId,
     );
 
   const selectedImage =
     sortedImages.find(
       (image) => image.id === selectedImageId,
     ) ?? sortedImages[0];
+
+  const selectedImageIndex = Math.max(
+    0,
+    sortedImages.findIndex(
+      (image) => image.id === selectedImage?.id,
+    ),
+  );
+
+  function selectImageAt(index: number) {
+    const image = sortedImages[index];
+
+    if (image) {
+      setSelectedImageId(image.id);
+    }
+  }
+
+  function showPreviousImage() {
+    if (sortedImages.length > 1) {
+      selectImageAt(
+        (selectedImageIndex - 1 + sortedImages.length) %
+          sortedImages.length,
+      );
+    }
+  }
+
+  function showNextImage() {
+    if (sortedImages.length > 1) {
+      selectImageAt(
+        (selectedImageIndex + 1) % sortedImages.length,
+      );
+    }
+  }
 
   const availableQuantity =
     selectedVariant?.stockQuantity ?? 0;
@@ -103,46 +98,11 @@ export default function ProductDetails({
   const isVariantAvailable =
     Boolean(selectedVariant?.inStock);
 
-  function handleColorChange(color: string) {
-    setSelectedColor(color);
-    setCartMessage(null);
-    setCartError(null);
-
-    const matchingVariant =
-      product.variants.find(
-        (variant) =>
-          variant.color === color &&
-          variant.inStock,
-      );
-
-    if (matchingVariant) {
-      setSelectedSize(matchingVariant.size);
-      setQuantity(1);
-    }
-  }
-
-  function handleSizeChange(size: string) {
-    setSelectedSize(size);
+  function handleVariantChange(variantId: string) {
+    setSelectedVariantId(variantId);
     setQuantity(1);
     setCartMessage(null);
     setCartError(null);
-  }
-
-  function isColorAvailable(color: string) {
-    return product.variants.some(
-      (variant) =>
-        variant.color === color &&
-        variant.inStock,
-    );
-  }
-
-  function isSizeAvailable(size: string) {
-    return product.variants.some(
-      (variant) =>
-        variant.color === selectedColor &&
-        variant.size === size &&
-        variant.inStock,
-    );
   }
 
   function decreaseQuantity() {
@@ -194,7 +154,7 @@ export default function ProductDetails({
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
         {/* Product Gallery */}
         <section>
-          <div className="aspect-[3/4] overflow-hidden rounded-2xl bg-neutral-100">
+          <div className="group relative aspect-[3/4] overflow-hidden rounded-2xl bg-neutral-100">
             {selectedImage ? (
               <img
                 src={selectedImage.imageUrl}
@@ -208,6 +168,27 @@ export default function ProductDetails({
               <div className="flex h-full items-center justify-center text-sm text-neutral-400">
                 No image available
               </div>
+            )}
+
+            {sortedImages.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Previous product image"
+                  onClick={showPreviousImage}
+                  className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-950/65 text-white opacity-100 transition hover:bg-neutral-950 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-white sm:opacity-0 sm:group-hover:opacity-100"
+                >
+                  <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next product image"
+                  onClick={showNextImage}
+                  className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-950/65 text-white opacity-100 transition hover:bg-neutral-950 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-white sm:opacity-0 sm:group-hover:opacity-100"
+                >
+                  <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </>
             )}
           </div>
 
@@ -280,99 +261,31 @@ export default function ProductDetails({
 
           <div className="my-8 border-t border-neutral-200" />
 
-          {/* Color */}
-          {colors.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-neutral-950">
-                  Color
-                </h2>
-
-                <span className="text-sm text-neutral-500">
-                  {selectedColor}
-                </span>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                {colors.map((color) => {
-                  const available =
-                    isColorAvailable(color);
-
-                  const selected =
-                    selectedColor === color;
-
-                  return (
-                    <button
-                      key={color}
-                      type="button"
-                      disabled={!available}
-                      onClick={() =>
-                        handleColorChange(color)
-                      }
-                      className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
-                        selected
-                          ? "border-neutral-950 bg-neutral-950 text-white"
-                          : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-950"
-                      } ${
-                        !available
-                          ? "cursor-not-allowed opacity-40"
-                          : ""
-                      }`}
-                    >
-                      {color}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Size */}
-          {sizes.length > 0 && (
-            <div className="mt-7">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-neutral-950">
-                  Size
-                </h2>
-
-                <span className="text-sm text-neutral-500">
-                  {selectedSize}
-                </span>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                {sizes.map((size) => {
-                  const available =
-                    isSizeAvailable(size);
-
-                  const selected =
-                    selectedSize === size;
-
-                  return (
-                    <button
-                      key={size}
-                      type="button"
-                      disabled={!available}
-                      onClick={() =>
-                        handleSizeChange(size)
-                      }
-                      className={`min-w-14 rounded-lg border px-4 py-2 text-sm font-medium transition ${
-                        selected
-                          ? "border-neutral-950 bg-neutral-950 text-white"
-                          : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-950"
-                      } ${
-                        !available
-                          ? "cursor-not-allowed opacity-40"
-                          : ""
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {/* Variant */}
+          <div className="mt-7">
+            <label
+              htmlFor="product-variant"
+              className="text-sm font-semibold text-neutral-950"
+            >
+              Variant
+            </label>
+            <select
+              id="product-variant"
+              value={selectedVariantId}
+              onChange={(event) =>
+                handleVariantChange(event.target.value)
+              }
+              className="mt-3 w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-700 focus:border-neutral-950 focus:outline-none"
+            >
+              <option value="">Select a variant</option>
+              {product.variants.map((variant) => (
+                <option key={variant.id} value={variant.id}>
+                  {variant.color} / {variant.size}
+                  {!variant.inStock ? " (Out of stock)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Availability */}
           <div className="mt-7">
@@ -388,7 +301,7 @@ export default function ProductDetails({
               )
             ) : (
               <p className="text-sm font-medium text-neutral-500">
-                Select a valid color and size
+                Select a variant
               </p>
             )}
           </div>

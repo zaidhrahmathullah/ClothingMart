@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../apps/api/src/generated/prisma/client.js";
 
@@ -20,6 +21,30 @@ const prisma = new PrismaClient({
 async function main() {
   console.log("🌱 Seeding ClothingMart database...");
 
+  const adminPassword = process.env.ADMIN_SEED_PASSWORD;
+
+  if (adminPassword) {
+    await prisma.user.upsert({
+      where: { email: "admin@clothingmart.local" },
+      update: {
+        name: "ClothingMart Admin",
+        passwordHash: await bcrypt.hash(adminPassword, 12),
+        role: "ADMIN",
+      },
+      create: {
+        name: "ClothingMart Admin",
+        email: "admin@clothingmart.local",
+        passwordHash: await bcrypt.hash(adminPassword, 12),
+        role: "ADMIN",
+      },
+    });
+
+    console.log("Created development admin: admin@clothingmart.local");
+  } else {
+    console.log("Skipping admin seed; set ADMIN_SEED_PASSWORD to create it.");
+  }
+
+  await prisma.orderItem.deleteMany();
   await prisma.inventory.deleteMany();
   await prisma.productVariant.deleteMany();
   await prisma.productImage.deleteMany();
