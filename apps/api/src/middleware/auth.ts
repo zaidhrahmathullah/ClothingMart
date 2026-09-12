@@ -46,6 +46,7 @@ export function authenticate(
       jwt.verify(
         token,
         ACCESS_TOKEN_SECRET as string,
+        { algorithms: ["HS256"] },
       ) as unknown as AccessTokenPayload;
 
     req.user = payload;

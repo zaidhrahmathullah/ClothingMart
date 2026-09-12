@@ -41,6 +41,7 @@ function createAccessToken(user: AuthUser) {
     ACCESS_TOKEN_SECRET as string,
     {
       expiresIn: ACCESS_TOKEN_EXPIRES_IN,
+      algorithm: "HS256",
     },
   );
 }
@@ -156,8 +157,7 @@ export async function refresh(
   const refreshTokenHash =
     hashRefreshToken(refreshToken);
 
-  const session =
-    await prisma.authSession.findUnique({
+  const session = await prisma.authSession.findUnique({
       where: {
         refreshTokenHash,
       },
@@ -183,9 +183,21 @@ export async function refresh(
   const accessToken =
     createAccessToken(user);
 
+  // Rotate on every refresh. A stolen, already-used token cannot mint more sessions.
+  const nextRefreshToken = createRefreshToken();
+  const updated = await prisma.authSession.updateMany({
+    where: { id: session.id, refreshTokenHash, revokedAt: null },
+    data: { refreshTokenHash: hashRefreshToken(nextRefreshToken) },
+  });
+
+  if (updated.count !== 1) {
+    throw new AppError(401, "INVALID_REFRESH_TOKEN", "Refresh session is invalid or expired");
+  }
+
   return {
     user,
     accessToken,
+    refreshToken: nextRefreshToken,
   };
 }
 

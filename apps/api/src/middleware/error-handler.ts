@@ -2,6 +2,10 @@ import type { ErrorRequestHandler } from "express";
 import { ZodError } from "zod";
 import { AppError } from "../lib/app-error.js";
 
+function isPrismaKnownError(error: unknown): error is { code: string } {
+  return Boolean(error && typeof error === "object" && "code" in error);
+}
+
 export const errorHandler: ErrorRequestHandler = (
   error,
   _req,
@@ -30,6 +34,16 @@ export const errorHandler: ErrorRequestHandler = (
       },
     });
 
+    return;
+  }
+
+  if (isPrismaKnownError(error) && error.code === "P2002") {
+    res.status(409).json({ success: false, error: { code: "DUPLICATE_RESOURCE", message: "A record with these details already exists" } });
+    return;
+  }
+
+  if (isPrismaKnownError(error) && error.code === "P2025") {
+    res.status(404).json({ success: false, error: { code: "RESOURCE_NOT_FOUND", message: "The requested resource was not found" } });
     return;
   }
 

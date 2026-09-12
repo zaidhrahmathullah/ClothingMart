@@ -8,6 +8,8 @@ import {
 } from "./wishlist.controller.js";
 
 import { authenticate } from "../../middleware/auth.js";
+import { validateParams } from "../../middleware/validate.js";
+import { z } from "zod";
 
 const router = Router();
 
@@ -17,8 +19,10 @@ router.get("/", getWishlist);
 
 router.get("/ids", getWishlistIds);
 
-router.post("/:productId", addWishlistItem);
+const productIdSchema = z.object({ productId: z.string().uuid("Invalid product ID") });
 
-router.delete("/:productId", removeWishlistItem);
+router.post("/:productId", validateParams(productIdSchema), addWishlistItem);
+
+router.delete("/:productId", validateParams(productIdSchema), removeWishlistItem);
 
 export default router;

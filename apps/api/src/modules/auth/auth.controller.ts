@@ -8,10 +8,6 @@ import {
   register,
 } from "./auth.service.js";
 
-import {
-  loginSchema,
-  registerSchema,
-} from "./auth.validation.js";
 
 import type { AuthenticatedRequest } from "../../middleware/auth.js";
 
@@ -36,7 +32,7 @@ export async function registerUser(
   req: AuthenticatedRequest,
   res: Response,
 ) {
-  const data = registerSchema.parse(req.body);
+  const data = req.body;
 
   const user = await register(
     data.name,
@@ -56,7 +52,7 @@ export async function loginUser(
   req: AuthenticatedRequest,
   res: Response,
 ) {
-  const data = loginSchema.parse(req.body);
+  const data = req.body;
 
   const result = await login(
     data.email,
@@ -109,6 +105,11 @@ export async function refreshAccessToken(
       "accessToken",
       result.accessToken,
       accessCookieOptions,
+    )
+    .cookie(
+      "refreshToken",
+      result.refreshToken,
+      refreshCookieOptions,
     )
     .json({
       success: true,

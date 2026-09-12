@@ -10,7 +10,9 @@ import {
 
 import {
   createAddressSchema,
+  addressIdSchema,
 } from "./address.validation.js";
+import { validateBody, validateParams } from "../../middleware/validate.js";
 
 const router = Router();
 
@@ -23,22 +25,13 @@ router.get(
 
 router.post(
   "/",
-  (req, _res, next) => {
-    try {
-      req.body = createAddressSchema.parse(
-        req.body,
-      );
-
-      next();
-    } catch (error) {
-      next(error);
-    }
-  },
+  validateBody(createAddressSchema),
   createAddressController,
 );
 
 router.delete(
   "/:addressId",
+  validateParams(addressIdSchema),
   deleteAddressController,
 );
 

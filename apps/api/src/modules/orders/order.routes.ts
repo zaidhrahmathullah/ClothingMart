@@ -11,6 +11,8 @@ import {
 import {
   createOrderSchema,
 } from "./order.validation.js";
+import { validateBody, validateParams } from "../../middleware/validate.js";
+import { z } from "zod";
 
 const router = Router();
 
@@ -23,21 +25,13 @@ router.get(
 
 router.get(
   "/:orderId",
+  validateParams(z.object({ orderId: z.string().uuid("Invalid order ID") })),
   getOrderController,
 );
 
 router.post(
   "/",
-  (req, _res, next) => {
-    try {
-      req.body =
-        createOrderSchema.parse(req.body);
-
-      next();
-    } catch (error) {
-      next(error);
-    }
-  },
+  validateBody(createOrderSchema),
   createOrderController,
 );
 

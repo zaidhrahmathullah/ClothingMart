@@ -80,7 +80,18 @@ export async function apiUpload<T>(
     credentials: "include",
   });
 
-  const result = (await response.json()) as ApiResponse<T>;
+  const contentType = response.headers.get("content-type") ?? "";
+  const responseText = await response.text();
+  if (!contentType.includes("application/json")) {
+    throw new Error(`API returned a non-JSON response (${response.status}). Check the API URL and endpoint.`);
+  }
+
+  let result: ApiResponse<T>;
+  try {
+    result = JSON.parse(responseText) as ApiResponse<T>;
+  } catch {
+    throw new Error(`API returned invalid JSON (${response.status}). Check the API URL and endpoint.`);
+  }
 
   if (!response.ok || !result.success) {
     throw new Error(result.error?.message ?? "Image upload failed");

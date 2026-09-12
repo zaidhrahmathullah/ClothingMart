@@ -136,7 +136,11 @@ export async function updateProduct(id: string, input: any) {
           isActive: v.isActive,
         };
         const saved = v.id
-          ? await tx.productVariant.update({ where: { id: v.id }, data })
+          ? await (async () => {
+              const existingVariant = await tx.productVariant.findFirst({ where: { id: v.id, productId: id } });
+              if (!existingVariant) throw new AppError(404, "VARIANT_NOT_FOUND", "Product variant not found");
+              return tx.productVariant.update({ where: { id: v.id }, data });
+            })()
           : await tx.productVariant.create({
               data: { ...data, productId: id },
             });
@@ -315,14 +319,23 @@ export async function getOrder(id: string) {
 }
 
 export async function updateOrderStatus(id: string, status: OrderStatus) {
-  const order = await getOrder(id);
-  if (!transitions[order.status].includes(status))
-    throw new AppError(
-      409,
-      "INVALID_ORDER_TRANSITION",
-      `Cannot change order from ${order.status} to ${status}`,
-    );
-  await prisma.order.update({ where: { id }, data: { status } });
+  await prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id },
+      include: { items: { select: { productVariantId: true, quantity: true } } },
+    });
+    if (!order) throw new AppError(404, "ORDER_NOT_FOUND", "Order not found");
+    if (!transitions[order.status].includes(status)) {
+      throw new AppError(409, "INVALID_ORDER_TRANSITION", `Cannot change order from ${order.status} to ${status}`);
+    }
+    const result = await tx.order.updateMany({ where: { id, status: order.status }, data: { status } });
+    if (result.count !== 1) throw new AppError(409, "ORDER_STATUS_CHANGED", "Order status changed. Refresh and try again.");
+    if (status === "CANCELLED") {
+      for (const item of order.items) {
+        await tx.inventory.update({ where: { variantId: item.productVariantId }, data: { quantity: { increment: item.quantity } } });
+      }
+    }
+  });
   return getOrder(id);
 }
 

@@ -15,12 +15,32 @@ import { uploadDirectory } from "./modules/admin/admin-upload.js";
 import { errorHandler } from "./middleware/error-handler.js";
 
 const app = express();
+const isProduction = process.env.NODE_ENV === "production";
+const webOrigin = process.env.WEB_ORIGIN;
 
-app.use(express.json({ limit: "32mb" }));
+if (isProduction && !webOrigin) {
+  throw new Error("WEB_ORIGIN must be defined in production");
+}
+
+app.disable("x-powered-by");
+app.use((_, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
+app.use(express.json({ limit: "1mb" }));
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin(origin, callback) {
+      const allowedOrigin = webOrigin ?? "http://localhost:3000";
+      if (!origin || origin === allowedOrigin) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error("CORS origin not allowed"));
+    },
     credentials: true,
   }),
 );

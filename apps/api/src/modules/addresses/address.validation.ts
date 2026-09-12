@@ -50,7 +50,7 @@ export const createAddressSchema = z.object({
     .min(2)
     .max(100)
     .default("Sri Lanka"),
-});
+}).strict();
 
 export const addressIdSchema = z.object({
   addressId: z.string().uuid("Invalid address ID"),
