@@ -78,13 +78,84 @@ export type AdminOrderItem = {
 
 export type OrderStatus = "PENDING" | "CONFIRMED" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
 
+export type AdminRefundStatus =
+  | "PENDING"
+  | "COMPLETED"
+  | "FAILED";
+
+export type AdminPaymentStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "FAILED"
+  | "CANCELLED"
+  | "REFUNDED"
+  | "PARTIALLY_REFUNDED";
+
+export type AdminPaymentRefund = {
+  id: string;
+  paymentId: string;
+  status: AdminRefundStatus;
+  amount: string;
+  currency: string;
+  providerRefundId: string | null;
+  reason: string;
+  adminNote: string | null;
+  idempotencyKey: string;
+  metadata: unknown;
+  initiatedById: string | null;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+};
+
+export type AdminPayment = {
+  id: string;
+  orderId: string;
+  provider: string;
+  status: AdminPaymentStatus;
+
+  /*
+   * ClothingMart's authoritative order/payment amount.
+   * Currently stored in LKR.
+   */
+  amount: string;
+  currency: string;
+
+  providerPaymentId: string | null;
+  providerOrderId: string | null;
+  transactionReference: string | null;
+
+  metadata: unknown;
+
+  createdAt: string;
+  updatedAt: string;
+
+  refunds?: AdminPaymentRefund[];
+};
+
+export type AdminCreateRefundInput = {
+  amount?: string;
+
+  reason:
+    | "CUSTOMER_REQUEST"
+    | "DUPLICATE_PAYMENT"
+    | "ORDER_ISSUE"
+    | "PRODUCT_ISSUE"
+    | "OTHER";
+
+  adminNote?: string;
+
+  idempotencyKey: string;
+};
+
 export type AdminOrder = { 
     id: string; 
     status: OrderStatus; 
     total: string; 
     createdAt: string; 
     user: { id: string; name: string; email: string }; 
-    payment?: { status: string; provider: string } | null; 
+    payment: AdminPayment[];
     items: AdminOrderItem[] 
 };
 

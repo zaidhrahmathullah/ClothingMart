@@ -3,6 +3,16 @@ import { OrderStatus } from "../../generated/prisma/enums.js";
 import { AppError } from "../../lib/app-error.js";
 import { parseQuery } from "../../lib/validation.js";
 import * as service from "./admin.service.js";
+
+import {
+  createAdminPaymentRefund,
+} from "../payments/payment-refund.service.js";
+
+import {
+  createPaymentRefundSchema,
+  type CreatePaymentRefundInput,
+} from "../payments/payment-refund.validation.js";
+
 import {
   categorySchema,
   createProductSchema,
@@ -145,9 +155,25 @@ export const updateOrderStatus = async (
   req: Request<{ orderId: string }>,
   res: Response,
 ) => {
-  const value = parseBody(statusSchema, req.body) as { status: string };
-  if (!Object.values(OrderStatus).includes(value.status as OrderStatus))
-    throw new AppError(400, "INVALID_ORDER_STATUS", "Invalid order status");
+  const value = parseBody(
+    statusSchema,
+    req.body,
+  ) as {
+    status: string;
+  };
+
+  if (
+    !Object.values(OrderStatus).includes(
+      value.status as OrderStatus,
+    )
+  ) {
+    throw new AppError(
+      400,
+      "INVALID_ORDER_STATUS",
+      "Invalid order status",
+    );
+  }
+
   return send(
     res,
     await service.updateOrderStatus(
@@ -157,10 +183,45 @@ export const updateOrderStatus = async (
   );
 };
 
-export const listCustomers = async (req: Request, res: Response) =>
+
+export const createPaymentRefund = async (
+  req: Request<{ paymentId: string }>,
+  res: Response,
+) => {
+  const adminId = (req as any).user.sub;
+
+  const input = parseBody(
+    createPaymentRefundSchema,
+    req.body,
+  ) as CreatePaymentRefundInput;
+
+  const refund =
+    await createAdminPaymentRefund(
+      adminId,
+      req.params.paymentId,
+      input,
+    );
+
+  return send(
+    res,
+    refund,
+    201,
+  );
+};
+
+
+export const listCustomers = async (
+  req: Request,
+  res: Response,
+) =>
   send(
     res,
-    await service.listCustomers(parseQuery(listQuerySchema, req.query)),
+    await service.listCustomers(
+      parseQuery(
+        listQuerySchema,
+        req.query,
+      ),
+    ),
   );
 
 export const getCustomer = async (

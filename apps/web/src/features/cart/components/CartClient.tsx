@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import type { Cart } from "@/types/cart";
+
 import {
   clearCart,
   removeCartItem,
   updateCartItem,
 } from "@/services/cart";
+
+import {
+  useCart,
+} from "@/features/cart/context/CartContext";
 
 import CartItem from "./CartItem";
 import CartSummary from "./CartSummary";
@@ -20,14 +28,33 @@ type CartClientProps = {
 export default function CartClient({
   initialCart,
 }: CartClientProps) {
-  const [cart, setCart] =
-    useState<Cart>(initialCart);
+  const {
+    cart,
+    setCart,
+  } = useCart();
 
   const [updatingItemId, setUpdatingItemId] =
     useState<string | null>(null);
 
   const [clearing, setClearing] =
     useState(false);
+
+  /*
+   * The cart page is server-rendered with a fresh Cart.
+   *
+   * Synchronize that authoritative server snapshot with
+   * the shared client-side CartProvider when this page
+   * mounts or receives a new server snapshot.
+   */
+  useEffect(() => {
+    setCart(initialCart);
+  }, [
+    initialCart,
+    setCart,
+  ]);
+
+  const currentCart =
+    cart ?? initialCart;
 
   const handleUpdateQuantity = async (
     itemId: string,
@@ -41,6 +68,12 @@ export default function CartClient({
           quantity,
         });
 
+      /*
+       * The backend response is authoritative.
+       *
+       * Updating the shared CartProvider refreshes both
+       * this cart page and the Navbar badge immediately.
+       */
       setCart(updatedCart);
     } catch (error) {
       console.error(
@@ -90,7 +123,7 @@ export default function CartClient({
     }
   };
 
-  if (cart.items.length === 0) {
+  if (currentCart.items.length === 0) {
     return <EmptyCart />;
   }
 
@@ -99,7 +132,8 @@ export default function CartClient({
       <section>
         <div className="flex items-center justify-between border-b pb-4">
           <h2 className="text-lg font-semibold">
-            Cart Items ({cart.itemCount})
+            Cart Items (
+            {currentCart.itemCount})
           </h2>
 
           <button
@@ -115,24 +149,31 @@ export default function CartClient({
         </div>
 
         <div>
-          {cart.items.map((item) => (
-            <CartItem
-              key={item.id}
-              item={item}
-              updating={
-                updatingItemId === item.id
-              }
-              onUpdateQuantity={
-                handleUpdateQuantity
-              }
-              onRemove={handleRemove}
-            />
-          ))}
+          {currentCart.items.map(
+            (item) => (
+              <CartItem
+                key={item.id}
+                item={item}
+                updating={
+                  updatingItemId ===
+                  item.id
+                }
+                onUpdateQuantity={
+                  handleUpdateQuantity
+                }
+                onRemove={
+                  handleRemove
+                }
+              />
+            ),
+          )}
         </div>
       </section>
 
       <CartSummary
-        subtotal={cart.subtotal}
+        subtotal={
+          currentCart.subtotal
+        }
       />
     </div>
   );

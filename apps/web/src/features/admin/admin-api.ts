@@ -11,6 +11,8 @@ import type {
   AdminProduct,
   AdminProductList,
   OrderStatus,
+  AdminCreateRefundInput,
+  AdminPaymentRefund,
 } from "./admin-types";
 
 function query(params: Record<string, string | number | boolean | undefined>) {
@@ -90,6 +92,18 @@ export const adminApi = {
     apiFetch<AdminOrderList>(`/admin/orders${query(params)}`),
 
   order: (id: string) => apiFetch<AdminOrder>(`/admin/orders/${id}`),
+
+  createPaymentRefund: (
+    paymentId: string,
+    body: AdminCreateRefundInput,
+  ) =>
+    apiFetch<AdminPaymentRefund>(
+      `/admin/payments/${paymentId}/refunds`,
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+      },
+    ),
 
   updateOrderStatus: (id: string, status: OrderStatus) =>
     apiFetch<AdminOrder>(`/admin/orders/${id}/status`, {

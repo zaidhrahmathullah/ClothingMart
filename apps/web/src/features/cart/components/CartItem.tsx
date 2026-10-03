@@ -74,12 +74,12 @@ export default function CartItem({
             </div>
 
             <p className="font-medium">
-              ${item.subtotal}
+              LKR {item.subtotal}
             </p>
           </div>
 
           <p className="mt-2 text-sm text-gray-500">
-            ${item.unitPrice} each
+            LKR {item.unitPrice} each
           </p>
         </div>
 

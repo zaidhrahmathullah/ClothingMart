@@ -8,9 +8,12 @@ export type OrderStatus =
 
 export type PaymentStatus =
   | "PENDING"
-  | "PAID"
+  | "PROCESSING"
+  | "COMPLETED"
   | "FAILED"
-  | "REFUNDED";
+  | "CANCELLED"
+  | "REFUNDED"
+  | "PARTIALLY_REFUNDED";
 
 export type OrderItem = {
   id: string;

@@ -10,6 +10,11 @@ import type {
 } from "@/types/product";
 
 import { addCartItem } from "@/services/cart";
+
+import {
+  useCart,
+} from "@/features/cart/context/CartContext";
+
 import WishlistButton from "@/features/wishlist/components/WishlistButton";
 
 type ProductDetailsProps = {
@@ -19,6 +24,8 @@ type ProductDetailsProps = {
 export default function ProductDetails({
   product,
 }: ProductDetailsProps) {
+
+  const { setCart } = useCart();
   const sortedImages = useMemo(
     () =>
       [...product.images].sort(
@@ -130,10 +137,13 @@ export default function ProductDetails({
       setCartMessage(null);
       setCartError(null);
 
-      await addCartItem({
-        variantId: selectedVariant.id,
-        quantity,
-      });
+      const updatedCart =
+        await addCartItem({
+          variantId: selectedVariant.id,
+          quantity,
+        });
+
+      setCart(updatedCart);
 
       setCartMessage(
         "Product added to your cart.",

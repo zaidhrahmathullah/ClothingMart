@@ -5,6 +5,10 @@ import CategoryProductSection from "@/features/home/CategoryProductSection";
 import { serverApiFetch } from "@/lib/server-api";
 import type { Category } from "@/types/category";
 
+import FeaturedProducts from "@/features/home/FeaturedProducts";
+
+export const dynamic = "force-dynamic";
+
 async function getCategories(): Promise<Category[]> {
   try {
     return await serverApiFetch<Category[]>("/categories");
@@ -38,6 +42,9 @@ export default async function HomePage() {
           </div>
         </Container>
       </section>
+
+
+      <FeaturedProducts />
 
       {categories.map((category) => (
         <CategoryProductSection

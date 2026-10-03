@@ -44,6 +44,10 @@ router.patch("/inventory/:variantId", controller.updateInventory);
 router.get("/orders", controller.listOrders);
 router.get("/orders/:orderId", controller.getOrder);
 router.patch("/orders/:orderId/status", controller.updateOrderStatus);
+router.post(
+  "/payments/:paymentId/refunds",
+  controller.createPaymentRefund,
+);
 router.get("/customers", controller.listCustomers);
 router.get("/customers/:customerId", controller.getCustomer);
 

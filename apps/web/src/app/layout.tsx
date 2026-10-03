@@ -3,8 +3,22 @@ import Footer from "@/components/layout/Footer";
 
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+} from "next/font/google";
+
 import "./globals.css";
+
+import {
+  CartProvider,
+} from "@/features/cart/context/CartContext";
+
+import {
+  serverApiFetch,
+} from "@/lib/server-api";
+
+import type { Cart } from "@/types/cart";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,23 +32,45 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "ClothingMart",
-  description: "A modern full-stack fashion e-commerce platform.",
+  description:
+    "A modern full-stack fashion e-commerce platform.",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+async function getInitialCart() {
+  try {
+    return await serverApiFetch<Cart>(
+      "/cart",
+    );
+  } catch {
+    return null;
+  }
+}
+
+export default async function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const initialCart =
+    await getInitialCart();
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Navbar />
+        <CartProvider
+          initialCart={initialCart}
+        >
+          <Navbar />
 
-        <main className="flex-1">
-          {children}
-        </main>
+          <main className="flex-1">
+            {children}
+          </main>
 
-        <Footer />
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );

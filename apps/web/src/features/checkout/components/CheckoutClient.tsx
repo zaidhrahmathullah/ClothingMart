@@ -16,11 +16,25 @@ type CheckoutClientProps = {
   initialAddresses: Address[];
 };
 
+
+
+
 export default function CheckoutClient({
   initialCart,
   initialAddresses,
 }: CheckoutClientProps) {
   const router = useRouter();
+
+  function handlePaymentSuccess(orderId: string) {
+    router.push(`/orders/${orderId}/success`);
+    router.refresh();
+  }
+
+  function handlePaymentError(
+    message: string,
+  ) {
+    setError(message);
+  }
 
   const [cart] = useState(initialCart);
 
@@ -34,7 +48,6 @@ export default function CheckoutClient({
     initialAddresses.length === 0,
   );
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -46,31 +59,21 @@ export default function CheckoutClient({
     setShowAddressForm(false);
   }
 
-  async function handlePlaceOrder() {
+
+  async function handleCreateClothingMartOrder() {
     if (!selectedAddressId) {
-      setError("Please select a shipping address.");
-
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setError(null);
-
-      const order = await createOrder(selectedAddressId);
-
-      router.push(`/orders/${order.id}/success`);
-
-      router.refresh();
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to place your order.",
+      throw new Error(
+        "Please select a shipping address.",
       );
-    } finally {
-      setIsSubmitting(false);
     }
+
+    setError(null);
+
+    const order = await createOrder(
+      selectedAddressId,
+    );
+
+    return order.id;
   }
 
   return (
@@ -183,9 +186,16 @@ export default function CheckoutClient({
 
         <CheckoutSummary
           cart={cart}
-          isSubmitting={isSubmitting}
           disabled={!selectedAddressId}
-          onPlaceOrder={handlePlaceOrder}
+          onCreateClothingMartOrder={
+            handleCreateClothingMartOrder
+          }
+          onPaymentSuccess={
+            handlePaymentSuccess
+          }
+          onPaymentError={
+            handlePaymentError
+          }
         />
       </div>
     </main>

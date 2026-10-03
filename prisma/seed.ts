@@ -1,8 +1,49 @@
-import "dotenv/config";
+
+import dotenv from "dotenv";
+import { fileURLToPath } from "node:url";
 
 import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../apps/api/src/generated/prisma/client.js";
+
+const envPath = fileURLToPath(
+  new URL("../apps/api/.env", import.meta.url),
+);
+
+const result = dotenv.config({
+  path: envPath,
+  quiet: true,
+});
+
+if (result.error) {
+  const error = result.error as NodeJS.ErrnoException;
+
+  if (error.code !== "ENOENT") {
+    throw new Error(
+      `Failed to load Prisma seed environment: ${envPath}`,
+      { cause: error },
+    );
+  }
+}
+
+/**
+ * This seed script deletes existing commerce data.
+ * Never allow it to execute in production.
+ */
+if (process.env.NODE_ENV === "production") {
+  throw new Error(
+    "SEED_BLOCKED: Destructive database seeding is prohibited in production.",
+  );
+}
+
+/**
+ * Require deliberate confirmation for local development seeding.
+ */
+if (process.env.ALLOW_DESTRUCTIVE_SEED !== "true") {
+  throw new Error(
+    "SEED_BLOCKED: Set ALLOW_DESTRUCTIVE_SEED=true to explicitly authorize destructive development seeding.",
+  );
+}
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -17,6 +58,7 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({
   adapter,
 });
+
 
 async function main() {
   console.log("🌱 Seeding ClothingMart database...");

@@ -43,7 +43,7 @@ export async function getDashboard() {
     prisma.order.count(),
     prisma.payment.aggregate({
       _sum: { amount: true },
-      where: { status: "PAID" },
+      where: { status: "COMPLETED" },
     }),
     prisma.inventory.count({ where: { quantity: { lte: 5 } } }),
   ]);
@@ -51,7 +51,7 @@ export async function getDashboard() {
     products,
     customers,
     orders,
-    revenue: revenue._sum.amount?.toString() ?? "0.00",
+    revenue: revenue._sum?.amount?.toString() ?? "0.00",
     lowStock,
   };
 }
@@ -306,36 +306,159 @@ export async function listOrders(query: any) {
 }
 
 export async function getOrder(id: string) {
-  const order = await prisma.order.findUnique({
-    where: { id },
-    include: {
-      user: { select: { id: true, name: true, email: true } },
-      payment: true,
-      items: true,
-    },
-  });
-  if (!order) throw new AppError(404, "ORDER_NOT_FOUND", "Order not found");
+  const order =
+    await prisma.order.findUnique({
+      where: {
+        id,
+      },
+
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+
+        payment: {
+          include: {
+            refunds: {
+              orderBy: {
+                createdAt: "desc",
+              },
+            },
+          },
+        },
+
+        items: true,
+      },
+    });
+
+  if (!order) {
+    throw new AppError(
+      404,
+      "ORDER_NOT_FOUND",
+      "Order not found",
+    );
+  }
+
   return order;
 }
 
-export async function updateOrderStatus(id: string, status: OrderStatus) {
+export async function updateOrderStatus(
+  id: string,
+  status: OrderStatus,
+) {
   await prisma.$transaction(async (tx) => {
-    const order = await tx.order.findUnique({
-      where: { id },
-      include: { items: { select: { productVariantId: true, quantity: true } } },
-    });
-    if (!order) throw new AppError(404, "ORDER_NOT_FOUND", "Order not found");
-    if (!transitions[order.status].includes(status)) {
-      throw new AppError(409, "INVALID_ORDER_TRANSITION", `Cannot change order from ${order.status} to ${status}`);
+    /*
+     * Lock this Order for the duration of the status transition.
+     *
+     * This prevents two concurrent admin requests from both
+     * observing the same old status and applying cancellation
+     * side effects twice.
+     */
+    await tx.$executeRaw`
+      SELECT pg_advisory_xact_lock(
+        hashtextextended(${id}, 0)
+      )
+    `;
+
+    const order =
+      await tx.order.findUnique({
+        where: {
+          id,
+        },
+
+        include: {
+          items: {
+            select: {
+              productVariantId: true,
+              quantity: true,
+            },
+          },
+        },
+      });
+
+    if (!order) {
+      throw new AppError(
+        404,
+        "ORDER_NOT_FOUND",
+        "Order not found",
+      );
     }
-    const result = await tx.order.updateMany({ where: { id, status: order.status }, data: { status } });
-    if (result.count !== 1) throw new AppError(409, "ORDER_STATUS_CHANGED", "Order status changed. Refresh and try again.");
-    if (status === "CANCELLED") {
+
+    /*
+     * The existing transition table remains the authority for
+     * normal admin Order lifecycle changes.
+     */
+    if (
+      !transitions[order.status].includes(
+        status,
+      )
+    ) {
+      throw new AppError(
+        409,
+        "INVALID_ORDER_TRANSITION",
+        `Cannot change order from ${order.status} to ${status}`,
+      );
+    }
+
+    /*
+     * Phase 13 rule:
+     *
+     * finalizedAt === null
+     *   Inventory was never deducted.
+     *
+     * finalizedAt !== null
+     *   Successful payment finalization deducted inventory.
+     *
+     * Therefore cancellation may restore inventory only for a
+     * finalized Order.
+     */
+    const shouldRestoreInventory =
+      status === "CANCELLED" &&
+      order.finalizedAt !== null;
+
+    const result =
+      await tx.order.updateMany({
+        where: {
+          id,
+          status: order.status,
+        },
+
+        data: {
+          status,
+        },
+      });
+
+    if (result.count !== 1) {
+      throw new AppError(
+        409,
+        "ORDER_STATUS_CHANGED",
+        "Order status changed. Refresh and try again.",
+      );
+    }
+
+    if (shouldRestoreInventory) {
       for (const item of order.items) {
-        await tx.inventory.update({ where: { variantId: item.productVariantId }, data: { quantity: { increment: item.quantity } } });
+        await tx.inventory.update({
+          where: {
+            variantId:
+              item.productVariantId,
+          },
+
+          data: {
+            quantity: {
+              increment:
+                item.quantity,
+            },
+          },
+        });
       }
     }
   });
+
   return getOrder(id);
 }
 

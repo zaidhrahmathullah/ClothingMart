@@ -128,6 +128,16 @@ export function formatDate(value: string) {
   );
 }
 
-export function formatMoney(value: string | number) {
-  return `$${Number(value).toFixed(2)}`;
+export function formatMoney(
+  value: string | number,
+  currency: "LKR" | "USD" = "LKR",
+) {
+  const amount = Number(value);
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
 }

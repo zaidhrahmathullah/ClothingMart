@@ -90,6 +90,7 @@ export async function createOrder(
       }
 
       const unitPrice = Number(variant.price);
+
       const itemSubtotal =
         unitPrice * item.quantity;
 
@@ -184,7 +185,7 @@ export async function createOrder(
 
         payment: {
           create: {
-            provider: "PENDING",
+            provider: "PAYPAL",
             status: "PENDING",
             amount: total.toFixed(2),
           },
@@ -193,71 +194,78 @@ export async function createOrder(
 
       include: {
         items: true,
-        payment: true,
+
+        payment: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
 
     /*
-     * 5. Decrease inventory.
-     *
-     * IMPORTANT:
-     *
-     * We use:
-     *
-     * quantity >= requestedQuantity
-     *
-     * inside the WHERE condition.
-     *
-     * This protects against two customers
-     * attempting to purchase the final items
-     * at approximately the same time.
-     */
-    for (const item of cart.items) {
-      const result =
-        await tx.inventory.updateMany({
-          where: {
-            variantId:
-              item.productVariantId,
-
-            quantity: {
-              gte: item.quantity,
-            },
-          },
-
-          data: {
-            quantity: {
-              decrement:
-                item.quantity,
-            },
-          },
-        });
-
-      if (result.count !== 1) {
-        throw new AppError(
-          409,
-          "STOCK_CHANGED",
-          "Stock changed while placing your order. Please review your cart and try again.",
-        );
-      }
-    }
-
-    /*
-     * 6. Clear cart
-     */
-    await tx.cartItem.deleteMany({
-      where: {
-        cartId: cart.id,
-      },
-    });
-
-    /*
-     * 7. Return the created order
+     * 5. Return the created order
      */
     return formatOrder(order);
   });
 }
 
+/*
+ * Select the Payment that best represents the
+ * current payment state of an Order.
+ *
+ * An Order can contain multiple Payment records,
+ * so callers must not assume payment[0] is always
+ * the relevant Payment.
+ *
+ * Payments are loaded newest-first. Within that
+ * ordering, lifecycle relevance determines which
+ * Payment should be exposed by the Order API.
+ */
+function selectRelevantPayment(
+  payments: any[],
+) {
+  if (
+    !payments ||
+    payments.length === 0
+  ) {
+    return null;
+  }
+
+  const priority = [
+    "COMPLETED",
+    "PROCESSING",
+    "PENDING",
+    "PARTIALLY_REFUNDED",
+    "REFUNDED",
+    "FAILED",
+    "CANCELLED",
+  ];
+
+  for (const status of priority) {
+    const payment = payments.find(
+      (item) =>
+        item.status === status,
+    );
+
+    if (payment) {
+      return payment;
+    }
+  }
+
+  return payments[0] ?? null;
+}
+
 function formatOrder(order: any) {
+  /*
+   * Order.payment is a Payment[] relation.
+   *
+   * Select the relevant Payment explicitly instead
+   * of treating the relation as a single object.
+   */
+  const payment =
+    selectRelevantPayment(order.payment);
+
   return {
     id: order.id,
     status: order.status,
@@ -300,6 +308,7 @@ function formatOrder(order: any) {
     items: order.items.map(
       (item: any) => ({
         id: item.id,
+
         productVariantId:
           item.productVariantId,
 
@@ -310,28 +319,52 @@ function formatOrder(order: any) {
           item.variantDescription,
 
         unitPrice:
-          Number(item.unitPrice).toFixed(2),
+          Number(
+            item.unitPrice,
+          ).toFixed(2),
 
         quantity:
           item.quantity,
 
         subtotal:
-          Number(item.subtotal).toFixed(2),
+          Number(
+            item.subtotal,
+          ).toFixed(2),
       }),
     ),
 
-    payment: order.payment
+    payment: payment
       ? {
-          id: order.payment.id,
+          id: payment.id,
+
           provider:
-            order.payment.provider,
+            payment.provider,
+
           status:
-            order.payment.status,
+            payment.status,
+
           amount:
-            Number(order.payment.amount).toFixed(2),
+            Number(
+              payment.amount,
+            ).toFixed(2),
+
+          currency:
+            payment.currency,
+
+          providerOrderId:
+            payment.providerOrderId,
+
+          providerPaymentId:
+            payment.providerPaymentId,
+
           transactionReference:
-            order.payment
-              .transactionReference,
+            payment.transactionReference,
+
+          createdAt:
+            payment.createdAt,
+
+          updatedAt:
+            payment.updatedAt,
         }
       : null,
 
@@ -355,7 +388,16 @@ export async function getUserOrders(
 
       include: {
         items: true,
-        payment: true,
+
+        /*
+         * Payment is a one-to-many relation.
+         * Always load newest attempts first.
+         */
+        payment: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
 
@@ -375,7 +417,16 @@ export async function getUserOrder(
 
       include: {
         items: true,
-        payment: true,
+
+        /*
+         * Payment is a one-to-many relation.
+         * Always load newest attempts first.
+         */
+        payment: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
 

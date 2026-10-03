@@ -19,7 +19,7 @@ export default function CartSummary({
             Subtotal
           </span>
 
-          <span>${subtotal}</span>
+          <span>LKR {subtotal}</span>
         </div>
 
         <div className="flex justify-between">
@@ -33,7 +33,7 @@ export default function CartSummary({
         <div className="border-t pt-4">
           <div className="flex justify-between text-base font-semibold">
             <span>Total</span>
-            <span>${subtotal}</span>
+            <span>LKR {subtotal}</span>
           </div>
         </div>
       </div>
@@ -45,10 +45,6 @@ export default function CartSummary({
         Proceed to Checkout
       </Link>
 
-      <p className="mt-3 text-center text-xs text-gray-500">
-        Checkout will be available in the next
-        stage.
-      </p>
     </aside>
   );
 }

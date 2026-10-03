@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { adminApi } from "@/features/admin/admin-api";
 import type { AdminOrder, OrderStatus } from "@/features/admin/admin-types";
+import AdminPaymentManagement from "@/features/admin/components/AdminPaymentManagement";
 import {
   AdminButton,
   AdminCard,
@@ -38,6 +39,14 @@ export default function AdminOrderDetailPage() {
         ),
       );
   }, [params.id]);
+
+  async function refreshOrder() {
+    const updated =
+      await adminApi.order(params.id);
+
+    setOrder(updated);
+  }
+
   async function change(status: OrderStatus) {
     setSaving(true);
     try {
@@ -123,12 +132,15 @@ export default function AdminOrderDetailPage() {
                 ))
               )}
             </div>
-            {order.payment && (
-              <p className="mt-6 text-sm text-neutral-500">
-                Payment: {order.payment.status} via {order.payment.provider}
-              </p>
-            )}
           </AdminCard>
+          <div className="lg:col-span-2">
+            <AdminPaymentManagement
+              payments={order.payment}
+              onRefundCompleted={
+                refreshOrder
+              }
+            />
+          </div>
         </div>
       )}
     </AdminPage>

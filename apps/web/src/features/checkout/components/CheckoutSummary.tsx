@@ -1,17 +1,20 @@
 import type { Cart } from "@/types/cart";
+import PayPalCheckout from "./PayPalCheckout";
 
 type CheckoutSummaryProps = {
   cart: Cart;
-  isSubmitting: boolean;
   disabled: boolean;
-  onPlaceOrder: () => void;
+  onCreateClothingMartOrder: () => Promise<string>;
+  onPaymentSuccess: (orderId: string) => void;
+  onPaymentError: (message: string) => void;
 };
 
 export default function CheckoutSummary({
   cart,
-  isSubmitting,
   disabled,
-  onPlaceOrder,
+  onCreateClothingMartOrder,
+  onPaymentSuccess,
+  onPaymentError,
 }: CheckoutSummaryProps) {
   return (
     <aside className="rounded-2xl border border-neutral-200 bg-white p-6">
@@ -93,20 +96,25 @@ export default function CheckoutSummary({
         </span>
       </div>
 
-      <button
-        type="button"
-        disabled={disabled || isSubmitting}
-        onClick={onPlaceOrder}
-        className="mt-6 w-full rounded-xl bg-neutral-950 px-6 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
-      >
-        {isSubmitting
-          ? "Placing Order..."
-          : "Place Order"}
-      </button>
+
+      <div className="mt-6 border-t border-neutral-200 pt-6">
+        <p className="mb-4 text-center text-xs font-medium uppercase tracking-wide text-neutral-500">
+          Secure payment with PayPal
+        </p>
+
+        <PayPalCheckout
+          disabled={disabled}
+          onCreateClothingMartOrder={
+            onCreateClothingMartOrder
+          }
+          onPaymentSuccess={onPaymentSuccess}
+          onPaymentError={onPaymentError}
+        />
+      </div>
 
       <p className="mt-4 text-center text-xs leading-5 text-neutral-500">
-        Payment will be available after
-        order confirmation.
+        Your order will be confirmed after
+        PayPal successfully completes the payment.
       </p>
     </aside>
   );
