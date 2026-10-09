@@ -5,6 +5,8 @@ import { AppError } from "../../lib/app-error.js";
 import * as controller from "./admin.controller.js";
 import { uploadProductImagesController } from "./admin-upload.controller.js";
 import { productImageUpload } from "./admin-upload.js";
+import { categoryImageUpload } from "./admin-category-upload.js";
+import { uploadCategoryImagesController } from "./admin-category-upload.controller.js";
 
 const router = Router();
 router.use(authenticate, requireRole(UserRole.ADMIN));
@@ -21,11 +23,39 @@ function handleProductImageUpload(req: Parameters<typeof uploadProductImages>[0]
 	});
 }
 
+const uploadCategoryImages = categoryImageUpload.array("images", 3);
+
+function handleCategoryImageUpload(
+  req: Parameters<typeof uploadCategoryImages>[0],
+  res: Parameters<typeof uploadCategoryImages>[1],
+  next: Parameters<typeof uploadCategoryImages>[2],
+) {
+  uploadCategoryImages(req, res, (error) => {
+    if (error) {
+      next(
+        new AppError(
+          400,
+          "INVALID_CATEGORY_IMAGES",
+          "Category images must be JPG, PNG, WebP or GIF files, no larger than 3 MB each (maximum 3 images).",
+        ),
+      );
+      return;
+    }
+
+    next();
+  });
+}
+
 router.get("/dashboard", controller.getDashboard);
 router.post(
 	"/uploads/product-images",
 	handleProductImageUpload,
 	uploadProductImagesController,
+);
+router.post(
+  "/uploads/category-images",
+  handleCategoryImageUpload,
+  uploadCategoryImagesController,
 );
 router.get("/products", controller.listProducts);
 router.post("/products", controller.createProduct);

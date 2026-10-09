@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-export const createAddressSchema = z.object({
+const addressFields = {
+  label: z
+    .string()
+    .trim()
+    .min(1, "Address label is required")
+    .max(40, "Address label is too long"),
+
   fullName: z
     .string()
     .trim()
@@ -48,10 +54,40 @@ export const createAddressSchema = z.object({
     .string()
     .trim()
     .min(2)
-    .max(100)
-    .default("Sri Lanka"),
-}).strict();
+    .max(100),
+};
+
+export const createAddressSchema = z
+  .object({
+    ...addressFields,
+
+    country:
+      addressFields.country.default(
+        "Sri Lanka",
+      ),
+
+    isDefault: z.boolean().optional(),
+  })
+  .strict();
+
+export const updateAddressSchema = z
+  .object({
+    ...addressFields,
+    isDefault: z.boolean().optional(),
+  })
+  .partial()
+  .strict()
+  .refine(
+    (data) =>
+      Object.keys(data).length > 0,
+    {
+      message:
+        "At least one address field is required",
+    },
+  );
 
 export const addressIdSchema = z.object({
-  addressId: z.string().uuid("Invalid address ID"),
+  addressId: z
+    .string()
+    .uuid("Invalid address ID"),
 });

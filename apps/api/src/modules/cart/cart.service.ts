@@ -1,9 +1,12 @@
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../lib/app-error.js";
+import {
+  getEffectivePrice,
+} from "../../lib/product-price.js";
 
 function formatCart(cart: any) {
   const items = cart.items.map((item: any) => {
-    const unitPrice = Number(item.variant.price);
+    const unitPrice = getEffectivePrice(item.variant);
     const subtotal = unitPrice * item.quantity;
 
     return {
@@ -17,7 +20,11 @@ function formatCart(cart: any) {
         sku: item.variant.sku,
         size: item.variant.size,
         color: item.variant.color,
-        price: unitPrice.toFixed(2),
+        price: item.variant.price.toString(),
+        discountedPrice:
+          item.variant.discountedPrice?.toString() ?? null,
+        effectivePrice:
+          unitPrice.toFixed(2),
         stockQuantity: item.variant.inventory?.quantity ?? 0,
         inStock: (item.variant.inventory?.quantity ?? 0) > 0,
       },

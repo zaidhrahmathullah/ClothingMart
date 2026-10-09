@@ -32,6 +32,19 @@ export const adminApi = {
     }>("/admin/uploads/product-images", body);
   },
 
+  uploadCategoryImages: (files: File[]) => {
+    const body = new FormData();
+    files.forEach((file) => {
+      body.append("images", file);
+    });
+    return apiUpload<{
+      images: {
+        imageUrl: string;
+        originalName: string;
+      }[];
+    }>("/admin/uploads/category-images", body);
+  },
+
   dashboard: () => apiFetch<AdminDashboard>("/admin/dashboard"),
   
   products: (

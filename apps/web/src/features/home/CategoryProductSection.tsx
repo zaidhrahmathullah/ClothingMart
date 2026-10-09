@@ -21,7 +21,7 @@ async function getCategoryProducts(
       await serverApiFetch<ProductListResponse>(
         `/products?category=${encodeURIComponent(
           categorySlug,
-        )}&page=1&limit=4&sort=newest`,
+        )}&page=1&limit=5&sort=newest`,
       );
 
     return result.products;
@@ -40,20 +40,20 @@ export default async function CategoryProductSection({
   }
 
   return (
-    <section className="py-16">
+    <section className="border-t border-neutral-100 py-11 sm:py-12">
       <Container>
-        <div className="mb-8 flex items-end justify-between gap-6">
+        <div className="mb-6 flex items-end justify-between gap-6">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
               Collection
             </p>
 
-            <h2 className="text-3xl font-semibold tracking-tight text-neutral-950 md:text-4xl">
+            <h2 className="text-2xl font-medium tracking-[-0.025em] text-neutral-950 sm:text-[28px]">
               {category.name}
             </h2>
 
             {category.description && (
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-600">
+              <p className="mt-1.5 max-w-xl text-[13px] leading-5 text-neutral-500">
                 {category.description}
               </p>
             )}
@@ -61,13 +61,13 @@ export default async function CategoryProductSection({
 
           <Link
             href={`/shop/category/${category.slug}`}
-            className="hidden rounded-full border border-neutral-300 px-5 py-2.5 text-sm font-semibold text-neutral-900 transition hover:border-neutral-950 hover:bg-neutral-950 hover:text-white sm:inline-flex"
+            className="hidden shrink-0 border-b border-neutral-400 pb-0.5 text-[13px] font-medium text-neutral-600 transition-colors hover:border-neutral-950 hover:text-neutral-950 sm:inline-flex"
           >
             View All {category.name}
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-3 sm:gap-x-4 lg:grid-cols-5 lg:gap-x-5">
           {products.map((product) => (
             <ProductCard
               key={product.id}
@@ -79,7 +79,7 @@ export default async function CategoryProductSection({
         <div className="mt-6 sm:hidden">
           <Link
             href={`/shop/category/${category.slug}`}
-            className="inline-flex w-full items-center justify-center rounded-full border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-900 transition hover:border-neutral-950 hover:bg-neutral-950 hover:text-white"
+            className="inline-flex rounded border border-neutral-300 px-4 py-2 text-[13px] font-medium text-neutral-800 transition-colors hover:border-neutral-950"
           >
             View All {category.name}
           </Link>

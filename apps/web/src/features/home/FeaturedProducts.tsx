@@ -1,18 +1,15 @@
-
 import Link from "next/link";
 
 import Container from "@/components/ui/Container";
 import ProductCard from "@/features/products/components/ProductCard";
-
 import { serverApiFetch } from "@/lib/server-api";
-
 import type { ProductListResponse } from "@/types/product";
 
 async function getFeaturedProducts() {
   try {
     const result =
       await serverApiFetch<ProductListResponse>(
-        "/products?page=1&limit=4&sort=newest",
+        "/products?page=1&limit=10&sort=newest",
       );
 
     return result.products;
@@ -34,28 +31,32 @@ export default async function FeaturedProducts() {
   }
 
   return (
-    <section className="border-y border-neutral-200 bg-neutral-50 py-20 sm:py-24">
+    <section id="featured" className="py-12 sm:py-14">
       <Container>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">
-              Selected for you
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+              Latest arrivals
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-neutral-950 sm:text-4xl">
+            <h2 className="mt-2 text-2xl font-medium tracking-[-0.03em] text-neutral-950 sm:text-3xl">
               Featured pieces
             </h2>
+
+            <p className="mt-2 max-w-lg text-[13px] leading-5 text-neutral-500">
+              Explore the latest additions to the ClothingMart collection.
+            </p>
           </div>
 
           <Link
             href="/shop"
-            className="text-sm font-semibold text-neutral-950 underline underline-offset-4"
+            className="hidden border-b border-neutral-400 pb-0.5 text-[13px] font-medium text-neutral-600 transition-colors hover:border-neutral-950 hover:text-neutral-950 sm:inline-flex"
           >
-            Shop all products
+            View all products →
           </Link>
         </div>
 
-        <div className="mt-10 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4">
+        <div className="mt-7 grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-3 sm:gap-x-4 lg:grid-cols-5 lg:gap-x-5 lg:gap-y-8">
           {products.map((product) => (
             <ProductCard
               key={product.id}

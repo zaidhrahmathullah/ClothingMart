@@ -1,6 +1,8 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
+import RouteVisibility from "@/components/layout/RouteVisibility";
+
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import {
@@ -19,6 +21,11 @@ import {
 } from "@/lib/server-api";
 
 import type { Cart } from "@/types/cart";
+
+import {
+  NotificationProvider,
+} from "@/components/feedback/NotificationProvider";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,17 +67,21 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <CartProvider
-          initialCart={initialCart}
-        >
-          <Navbar />
+        <NotificationProvider>
+          <CartProvider initialCart={initialCart}>
+            <RouteVisibility hideOnAdmin>
+              <Navbar />
+            </RouteVisibility>
 
-          <main className="flex-1">
-            {children}
-          </main>
+            <main className="flex-1">
+              {children}
+            </main>
 
-          <Footer />
-        </CartProvider>
+            <RouteVisibility hideOnAdmin>
+              <Footer />
+            </RouteVisibility>
+          </CartProvider>
+        </NotificationProvider>
       </body>
     </html>
   );

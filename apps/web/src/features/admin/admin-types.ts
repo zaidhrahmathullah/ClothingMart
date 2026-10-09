@@ -7,32 +7,71 @@ export type AdminPagination = {
     hasPreviousPage?: boolean 
 };
 
-export type AdminDashboard = { 
-    products: number; 
-    customers: number; 
-    orders: number; 
-    revenue: string; 
-    lowStock: number 
+export type AdminDashboard = {
+  products: number;
+  customers: number;
+  orders: number;
+  revenue: string;
+  lowStock: number;
+
+  orderStatuses: Array<{
+    status: string;
+    count: number;
+  }>;
+
+  paymentStatuses: Array<{
+    status: string;
+    count: number;
+  }>;
+
+  monthlyRevenue: Array<{
+    label: string;
+    revenue: string;
+  }>;
 };
 
-export type AdminCategory = { 
-    id: string; 
-    name: string; 
-    slug: string; 
-    description: string | null; 
-    imageUrl: string | null; 
-    isActive: boolean; 
-    _count?: { products: number } 
+export type AdminCategory = {
+  id: string;
+  parentId: string | null;
+
+  name: string;
+  slug: string;
+  description: string | null;
+
+  cardImageUrl: string | null;
+  animationImageUrl: string | null;
+  bannerImageUrl: string | null;
+
+  isActive: boolean;
+
+  parent?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+
+  children?: {
+    id: string;
+    name: string;
+    slug: string;
+    isActive: boolean;
+  }[];
+
+  _count?: {
+    products: number;
+    children: number;
+  };
 };
 
-export type AdminVariant = { 
-    id?: string; 
-    sku: string; 
-    size: string; 
-    color: string; 
-    price: string; 
-    quantity: number; 
-    isActive: boolean 
+export type AdminVariant = {
+  id?: string;
+  sku: string;
+  size: string;
+  color: string;
+  price: string;
+  discountedPrice: string | null;
+  quantity: number;
+  isActive: boolean;
 };
 
 export type AdminProduct = { 

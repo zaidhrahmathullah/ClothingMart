@@ -1,11 +1,13 @@
 import type { Response } from "express";
 
 import {
+  changePassword,
   getUserById,
   login,
   logout,
   refresh,
   register,
+  updateProfile,
 } from "./auth.service.js";
 
 
@@ -168,4 +170,79 @@ export async function getCurrentUser(
       user,
     },
   });
+}
+
+export async function updateProfileController(
+  req: AuthenticatedRequest,
+  res: Response,
+) {
+  const userId = req.user?.sub;
+
+  if (!userId) {
+    res.status(401).json({
+      success: false,
+      error: {
+        code: "UNAUTHENTICATED",
+        message:
+          "Authentication required",
+      },
+    });
+
+    return;
+  }
+
+  const user = await updateProfile(
+    userId,
+    req.body,
+  );
+
+  res.status(200).json({
+    success: true,
+    data: {
+      user,
+    },
+  });
+}
+
+export async function changePasswordController(
+  req: AuthenticatedRequest,
+  res: Response,
+) {
+  const userId = req.user?.sub;
+
+  if (!userId) {
+    res.status(401).json({
+      success: false,
+      error: {
+        code: "UNAUTHENTICATED",
+        message:
+          "Authentication required",
+      },
+    });
+
+    return;
+  }
+
+  await changePassword(
+    userId,
+    req.body.currentPassword,
+    req.body.newPassword,
+  );
+
+  /*
+   * All refresh sessions were revoked.
+   * Clear this browser's auth cookies too,
+   * requiring a fresh login immediately.
+   */
+  res
+    .clearCookie("accessToken")
+    .clearCookie("refreshToken")
+    .status(200)
+    .json({
+      success: true,
+      data: {
+        message:
+          "Password changed successfully. Please sign in again.",
+      },
+    });
 }

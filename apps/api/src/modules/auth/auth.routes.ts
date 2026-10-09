@@ -1,17 +1,23 @@
 import { Router } from "express";
 
 import {
+  changePasswordController,
   getCurrentUser,
   loginUser,
   logoutUser,
   refreshAccessToken,
   registerUser,
+  updateProfileController,
 } from "./auth.controller.js";
 
 import { authenticate } from "../../middleware/auth.js";
 import { rateLimit } from "../../middleware/rate-limit.js";
-import { validateBody } from "../../middleware/validate.js";
-import { loginSchema, registerSchema } from "./auth.validation.js";
+import { validateBody } from "../../middleware/validate.js";import {
+  changePasswordSchema,
+  loginSchema,
+  registerSchema,
+  updateProfileSchema,
+} from "./auth.validation.js";
 
 const router = Router();
 
@@ -26,6 +32,21 @@ router.get(
   "/me",
   authenticate,
   getCurrentUser,
+);
+
+router.patch(
+  "/profile",
+  authenticate,
+  validateBody(updateProfileSchema),
+  updateProfileController,
+);
+
+router.patch(
+  "/password",
+  authenticate,
+  authRateLimit,
+  validateBody(changePasswordSchema),
+  changePasswordController,
 );
 
 export default router;

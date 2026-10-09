@@ -33,11 +33,14 @@ export default function ProductPagination({
   }
 
   return (
-    <nav className="mt-12 flex items-center justify-center gap-2">
+    <nav
+      aria-label="Product pagination"
+      className="mt-10 flex flex-wrap items-center justify-center gap-1.5"
+    >
       {currentPage > 1 && (
         <Link
           href={pageHref(currentPage - 1)}
-          className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium hover:border-neutral-950"
+          className="rounded border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:border-neutral-950 hover:text-neutral-950"
         >
           Previous
         </Link>
@@ -50,10 +53,13 @@ export default function ProductPagination({
         <Link
           key={page}
           href={pageHref(page)}
-          className={`rounded-lg px-3 py-2 text-sm font-medium ${
+          aria-current={
+            page === currentPage ? "page" : undefined
+          }
+          className={`flex h-8 min-w-8 items-center justify-center rounded px-2 text-xs font-medium transition-colors ${
             page === currentPage
               ? "bg-neutral-950 text-white"
-              : "border border-neutral-300 hover:border-neutral-950"
+              : "border border-neutral-300 text-neutral-700 hover:border-neutral-950"
           }`}
         >
           {page}
@@ -63,7 +69,7 @@ export default function ProductPagination({
       {currentPage < totalPages && (
         <Link
           href={pageHref(currentPage + 1)}
-          className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium hover:border-neutral-950"
+          className="rounded border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:border-neutral-950 hover:text-neutral-950"
         >
           Next
         </Link>

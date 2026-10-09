@@ -18,6 +18,8 @@ type AddressFormProps = {
 };
 
 const initialForm: CreateAddressData = {
+  label: "Home",
+  isDefault: false,
   fullName: "",
   phone: "",
   addressLine1: "",
@@ -27,6 +29,9 @@ const initialForm: CreateAddressData = {
   postalCode: "",
   country: "Sri Lanka",
 };
+
+const inputClassName =
+  "mt-2 w-full rounded border border-neutral-300 bg-white px-3 py-2.5 text-[13px] text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950";
 
 export default function AddressForm({
   onCreated,
@@ -79,17 +84,20 @@ export default function AddressForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-5"
+      className="space-y-4"
     >
       {error && (
-        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div
+          role="alert"
+          className="rounded border border-red-200 bg-red-50 px-4 py-3 text-[12px] leading-5 text-red-700"
+        >
           {error}
         </div>
       )}
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <label className="text-sm font-medium">
+          <label className="text-xs font-medium text-neutral-700">
             Full name
           </label>
 
@@ -102,17 +110,19 @@ export default function AddressForm({
                 event.target.value,
               )
             }
-            className="mt-2 w-full rounded-lg border border-neutral-300 px-4 py-3 outline-none focus:border-neutral-950"
+            className={inputClassName}
+            placeholder="Full name"
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium">
+          <label className="text-xs font-medium text-neutral-700">
             Phone
           </label>
 
           <input
             required
+            type="tel"
             value={form.phone}
             onChange={(event) =>
               updateField(
@@ -120,12 +130,13 @@ export default function AddressForm({
                 event.target.value,
               )
             }
-            className="mt-2 w-full rounded-lg border border-neutral-300 px-4 py-3 outline-none focus:border-neutral-950"
+            className={inputClassName}
+            placeholder="Phone number"
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium">
+          <label className="text-xs font-medium text-neutral-700">
             Postal code
           </label>
 
@@ -138,12 +149,13 @@ export default function AddressForm({
                 event.target.value,
               )
             }
-            className="mt-2 w-full rounded-lg border border-neutral-300 px-4 py-3 outline-none focus:border-neutral-950"
+            className={inputClassName}
+            placeholder="Postal code"
           />
         </div>
 
         <div className="sm:col-span-2">
-          <label className="text-sm font-medium">
+          <label className="text-xs font-medium text-neutral-700">
             Address line 1
           </label>
 
@@ -156,14 +168,16 @@ export default function AddressForm({
                 event.target.value,
               )
             }
-            className="mt-2 w-full rounded-lg border border-neutral-300 px-4 py-3 outline-none focus:border-neutral-950"
+            className={inputClassName}
+            placeholder="Street address"
           />
         </div>
 
         <div className="sm:col-span-2">
-          <label className="text-sm font-medium">
+          <label className="text-xs font-medium text-neutral-700">
             Address line 2
-            <span className="ml-1 text-neutral-400">
+
+            <span className="ml-1 font-normal text-neutral-400">
               (optional)
             </span>
           </label>
@@ -178,12 +192,13 @@ export default function AddressForm({
                 event.target.value,
               )
             }
-            className="mt-2 w-full rounded-lg border border-neutral-300 px-4 py-3 outline-none focus:border-neutral-950"
+            className={inputClassName}
+            placeholder="Apartment, suite, unit, etc."
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium">
+          <label className="text-xs font-medium text-neutral-700">
             City
           </label>
 
@@ -196,12 +211,13 @@ export default function AddressForm({
                 event.target.value,
               )
             }
-            className="mt-2 w-full rounded-lg border border-neutral-300 px-4 py-3 outline-none focus:border-neutral-950"
+            className={inputClassName}
+            placeholder="City"
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium">
+          <label className="text-xs font-medium text-neutral-700">
             District
           </label>
 
@@ -214,7 +230,8 @@ export default function AddressForm({
                 event.target.value,
               )
             }
-            className="mt-2 w-full rounded-lg border border-neutral-300 px-4 py-3 outline-none focus:border-neutral-950"
+            className={inputClassName}
+            placeholder="District"
           />
         </div>
       </div>
@@ -222,7 +239,7 @@ export default function AddressForm({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="rounded-lg border border-neutral-950 px-5 py-3 text-sm font-semibold transition hover:bg-neutral-950 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex items-center justify-center rounded bg-neutral-950 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isSubmitting
           ? "Saving..."

@@ -237,3 +237,152 @@ export async function getUserById(
 
   return sanitizeUser(user);
 }
+
+
+export async function updateProfile(
+  userId: string,
+  data: {
+    name?: string;
+    email?: string;
+  },
+) {
+  const user =
+    await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+  if (!user) {
+    throw new AppError(
+      404,
+      "USER_NOT_FOUND",
+      "User account not found",
+    );
+  }
+
+  if (
+    data.email !== undefined &&
+    data.email !== user.email
+  ) {
+    const existingUser =
+      await prisma.user.findUnique({
+        where: {
+          email: data.email,
+        },
+      });
+
+    if (
+      existingUser &&
+      existingUser.id !== userId
+    ) {
+      throw new AppError(
+        409,
+        "EMAIL_ALREADY_EXISTS",
+        "An account with this email already exists",
+      );
+    }
+  }
+
+  const updatedUser =
+    await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        ...(data.name !== undefined && {
+          name: data.name,
+        }),
+
+        ...(data.email !== undefined && {
+          email: data.email,
+        }),
+      },
+    });
+
+  return sanitizeUser(updatedUser);
+}
+
+export async function changePassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+) {
+  const user =
+    await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+  if (!user) {
+    throw new AppError(
+      404,
+      "USER_NOT_FOUND",
+      "User account not found",
+    );
+  }
+
+  const passwordMatches =
+    await bcrypt.compare(
+      currentPassword,
+      user.passwordHash,
+    );
+
+  if (!passwordMatches) {
+    throw new AppError(
+      400,
+      "INVALID_CURRENT_PASSWORD",
+      "Current password is incorrect",
+    );
+  }
+
+  const samePassword =
+    await bcrypt.compare(
+      newPassword,
+      user.passwordHash,
+    );
+
+  if (samePassword) {
+    throw new AppError(
+      400,
+      "PASSWORD_UNCHANGED",
+      "New password must be different from your current password",
+    );
+  }
+
+  const passwordHash =
+    await bcrypt.hash(
+      newPassword,
+      12,
+    );
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        passwordHash,
+      },
+    }),
+
+    /*
+     * Revoke every refresh session except
+     * that the current access token may remain
+     * usable until its short 15-minute expiry.
+     *
+     * This protects the account if another
+     * device/session has been compromised.
+     */
+    prisma.authSession.updateMany({
+      where: {
+        userId,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    }),
+  ]);
+}

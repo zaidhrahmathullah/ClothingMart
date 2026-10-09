@@ -13,7 +13,19 @@ export type ProductFilters = {
   color?: string;
   minPrice?: number;
   maxPrice?: number;
-  sort?: string;
+  inStock?: "true" | "false";
+  sort?:
+    | "newest"
+    | "oldest"
+    | "name_asc"
+    | "name_desc"
+    | "price_asc"
+    | "price_desc";
+};
+
+export type ProductFacets = {
+  sizes: string[];
+  colors: string[];
 };
 
 function buildQuery(
@@ -36,6 +48,16 @@ function buildQuery(
   const query = params.toString();
 
   return query ? `?${query}` : "";
+}
+
+export async function getProductFacets(category?: string) {
+  const query = category
+    ? `?category=${encodeURIComponent(category)}`
+    : "";
+
+  return apiFetch<ProductFacets>(
+    `/products/facets${query}`,
+  );
 }
 
 export async function getProducts(

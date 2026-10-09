@@ -2,12 +2,22 @@
 
 import { Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
+
+import {
+  getLoginHref,
+  isAuthenticationError,
+} from "@/lib/auth-navigation";
 
 import {
   addToWishlist,
   removeFromWishlist,
 } from "@/services/wishlist";
+
+import {
+  useNotification,
+} from "@/components/feedback/NotificationProvider";
+
 
 type Props = {
   productId: string;
@@ -19,17 +29,15 @@ export default function WishlistButton({
   initialWishlisted = false,
 }: Props) {
   const router = useRouter();
+  const [wishlisted, setWishlisted] = useState(initialWishlisted);
+  const [loading, setLoading] = useState(false);
+  const notification = useNotification();
 
-  const [wishlisted, setWishlisted] =
-    useState(initialWishlisted);
+  async function handleClick(event: MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    event.stopPropagation();
 
-  const [loading, setLoading] =
-    useState(false);
-
-  async function handleClick() {
-    if (loading) {
-      return;
-    }
+    if (loading) return;
 
     setLoading(true);
 
@@ -37,57 +45,69 @@ export default function WishlistButton({
       if (wishlisted) {
         await removeFromWishlist(productId);
         setWishlisted(false);
+        notification.info(
+          "Removed from your wishlist.",
+        );
       } else {
         await addToWishlist(productId);
         setWishlisted(true);
+        notification.success(
+          "Saved to your wishlist.",
+        );
       }
 
       router.refresh();
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "";
+      const message = error instanceof Error ? error.message : "";
 
-      if (
-        message
-          .toLowerCase()
-          .includes("authentication")
-      ) {
+      if (isAuthenticationError(error)) {
         router.push(
-          `/login?next=${encodeURIComponent(
-            window.location.pathname,
-          )}`,
+          getLoginHref(window.location.pathname),
         );
-
         return;
       }
 
-      console.error(error);
+      notification.error(
+        message ||
+          "Unable to update your wishlist.",
+      );
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={loading}
-      aria-label={
-        wishlisted
-          ? "Remove from wishlist"
-          : "Add to wishlist"
-      }
-      className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-sm backdrop-blur transition hover:scale-105 disabled:opacity-60"
-    >
-      <Heart
-        className={`h-5 w-5 ${
+    <>
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={loading}
+        aria-pressed={wishlisted}
+        aria-label={
+          loading
+            ? "Updating wishlist"
+            : wishlisted
+              ? "Remove from wishlist"
+              : "Add to wishlist"
+        }
+        title={
           wishlisted
-            ? "fill-current text-neutral-950"
-            : "text-neutral-700"
-        }`}
-      />
-    </button>
+            ? "Remove from wishlist"
+            : "Add to wishlist"
+        }
+        aria-busy={loading}
+        className="flex h-8 w-8 items-center justify-center rounded bg-white/95 shadow-sm backdrop-blur transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <Heart
+          className={`h-4 w-4 ${
+            wishlisted
+              ? "fill-current text-neutral-950"
+              : "text-neutral-700"
+          }`}
+          aria-hidden="true"
+        />
+      </button>
+
+    </>
   );
 }

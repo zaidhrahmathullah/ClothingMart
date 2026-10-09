@@ -98,7 +98,7 @@ async function main() {
       name: "Men",
       slug: "men",
       description: "Modern everyday clothing for men.",
-      imageUrl: null,
+      cardImageUrl: null,
     },
   });
 
@@ -107,7 +107,7 @@ async function main() {
       name: "Women",
       slug: "women",
       description: "Contemporary fashion for women.",
-      imageUrl: null,
+      cardImageUrl: null,
     },
   });
 
@@ -116,7 +116,7 @@ async function main() {
       name: "Kids",
       slug: "kids",
       description: "Comfortable and stylish clothing for kids.",
-      imageUrl: null,
+      cardImageUrl: null,
     },
   });
 

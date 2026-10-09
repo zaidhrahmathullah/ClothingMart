@@ -6,6 +6,13 @@ import {
   createReview,
 } from "@/services/review";
 
+import { usePathname, useRouter } from "next/navigation";
+
+import {
+  getLoginHref,
+  isAuthenticationError,
+} from "@/lib/auth-navigation";
+
 type ReviewFormProps = {
   productId: string;
   onCreated?: () => void;
@@ -15,6 +22,9 @@ export default function ReviewForm({
   productId,
   onCreated,
 }: ReviewFormProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+
   const [rating, setRating] =
     useState(5);
 
@@ -54,6 +64,11 @@ export default function ReviewForm({
       setComment("");
       onCreated?.();
     } catch (error) {
+      if (isAuthenticationError(error)) {
+        router.push(getLoginHref(pathname));
+        return;
+      }
+
       setError(
         error instanceof Error
           ? error.message
@@ -67,70 +82,76 @@ export default function ReviewForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="mt-8 rounded-2xl bg-neutral-50 p-6"
+      className="mt-12 border-t border-neutral-200 pt-8"
     >
-      <h3 className="font-semibold">
-        Write a Review
-      </h3>
-
-      <div className="mt-4">
-        <p className="text-sm font-medium">
-          Rating
+      <div className="max-w-xl">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+          Your Experience
         </p>
 
-        <div className="mt-2 flex gap-1">
-          {Array.from(
-            { length: 5 },
-            (_, index) => {
-              const value = index + 1;
+        <h3 className="mt-2 text-xl font-medium tracking-[-0.02em] text-neutral-950">
+          Write a Review
+        </h3>
 
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() =>
-                    setRating(value)
-                  }
-                  className={`text-2xl ${
-                    value <= rating
-                      ? "text-neutral-950"
-                      : "text-neutral-300"
-                  }`}
-                  aria-label={`Rate ${value} stars`}
-                >
-                  ★
-                </button>
-              );
-            },
-          )}
+        <div className="mt-5">
+          <p className="text-[13px] font-semibold text-neutral-950">
+            Rating
+          </p>
+
+          <div className="mt-2 flex gap-1">
+            {Array.from(
+              { length: 5 },
+              (_, index) => {
+                const value = index + 1;
+
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() =>
+                      setRating(value)
+                    }
+                    className={`text-xl leading-none transition-colors ${
+                      value <= rating
+                        ? "text-neutral-950"
+                        : "text-neutral-300 hover:text-neutral-500"
+                    }`}
+                    aria-label={`Rate ${value} stars`}
+                  >
+                    ★
+                  </button>
+                );
+              },
+            )}
+          </div>
         </div>
+
+        <textarea
+          value={comment}
+          onChange={(event) =>
+            setComment(event.target.value)
+          }
+          placeholder="Share your experience..."
+          rows={4}
+          className="mt-4 w-full resize-y rounded-md border border-neutral-300 bg-white p-3 text-[13px] leading-5 outline-none transition-colors placeholder:text-neutral-400 focus:border-neutral-950"
+        />
+
+        {error && (
+          <p className="mt-2 text-xs text-red-600">
+            {error}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="mt-3 rounded bg-neutral-950 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {loading
+            ? "Submitting..."
+            : "Submit Review"}
+        </button>
       </div>
-
-      <textarea
-        value={comment}
-        onChange={(event) =>
-          setComment(event.target.value)
-        }
-        placeholder="Share your experience..."
-        rows={5}
-        className="mt-4 w-full rounded-xl border border-neutral-300 bg-white p-3 text-sm outline-none focus:border-neutral-950"
-      />
-
-      {error && (
-        <p className="mt-3 text-sm text-red-600">
-          {error}
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="mt-4 rounded-xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
-      >
-        {loading
-          ? "Submitting..."
-          : "Submit Review"}
-      </button>
     </form>
   );
 }

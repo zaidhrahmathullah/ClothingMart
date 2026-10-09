@@ -16,7 +16,12 @@ export type ProductVariant = {
   sku: string;
   size: string;
   color: string;
+
   price: string;
+  discountedPrice: string | null;
+  effectivePrice: string;
+  hasDiscount: boolean;
+
   stockQuantity: number;
   inStock: boolean;
 };

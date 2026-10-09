@@ -1,86 +1,146 @@
+import {
+  ArrowRight,
+  Heart,
+  ShoppingBag,
+} from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import Container from "@/components/ui/Container";
+import AccountShell from "@/features/account/components/AccountShell";
 import ProductCard from "@/features/products/components/ProductCard";
 import { serverApiFetch } from "@/lib/server-api";
+
+import type { AuthResponse } from "@/types/auth";
 import type { Product } from "@/types/product";
 
-async function getWishlist(): Promise<Product[]> {
-  try {
-    return await serverApiFetch<Product[]>(
-      "/wishlist",
-    );
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "";
-
-    if (
-      message.toLowerCase().includes("authentication")
-    ) {
-      redirect(
-        "/login?next=%2Fwishlist",
-      );
-    }
-
-    throw error;
-  }
-}
+export const dynamic = "force-dynamic";
 
 export default async function WishlistPage() {
-  const products = await getWishlist();
+  let auth: AuthResponse;
+  let products: Product[];
+
+  try {
+    [auth, products] = await Promise.all([
+      serverApiFetch<AuthResponse>(
+        "/auth/me",
+      ),
+      serverApiFetch<Product[]>(
+        "/wishlist",
+      ),
+    ]);
+  } catch {
+    redirect(
+      "/login?next=%2Fwishlist",
+    );
+  }
 
   return (
-    <main>
-      <section className="border-b border-neutral-200 bg-neutral-50 py-14">
-        <Container>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
-            Your Collection
-          </p>
+    <AccountShell
+      name={auth.user.name}
+      email={auth.user.email}
+      title="Wishlist"
+      description="Keep the pieces you love close by and return whenever you're ready."
+    >
+      <div className="space-y-6">
+        {/* Wishlist overview */}
+        <section className="rounded border border-neutral-200 bg-white">
+          <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-neutral-950 text-white">
+                <Heart className="h-[17px] w-[17px]" />
+              </div>
 
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-neutral-950">
-            Wishlist
-          </h1>
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
+                  Saved Collection
+                </p>
 
-          <p className="mt-3 max-w-xl text-sm leading-6 text-neutral-600">
-            Save pieces you love and come back to them whenever
-            you&apos;re ready.
-          </p>
-        </Container>
-      </section>
+                <h2 className="mt-1 text-lg font-medium tracking-[-0.02em] text-neutral-950">
+                  {products.length}{" "}
+                  {products.length === 1
+                    ? "piece"
+                    : "pieces"}{" "}
+                  saved
+                </h2>
 
-      <Container>
+                <p className="mt-1.5 max-w-lg text-[13px] leading-5 text-neutral-500">
+                  Your favourites stay
+                  together here so you can
+                  easily return to them.
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/shop"
+              className="inline-flex w-fit shrink-0 items-center justify-center gap-2 rounded bg-neutral-950 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-neutral-800"
+            >
+              Continue Shopping
+
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </section>
+
         {products.length === 0 ? (
-          <div className="py-24 text-center">
-            <h2 className="text-2xl font-semibold text-neutral-950">
+          <section className="rounded border border-neutral-200 bg-white px-5 py-12 text-center sm:px-6">
+            <div className="mx-auto flex h-9 w-9 items-center justify-center rounded bg-neutral-100 text-neutral-500">
+              <Heart className="h-[17px] w-[17px]" />
+            </div>
+
+            <h2 className="mt-4 text-sm font-semibold text-neutral-950">
               Your wishlist is empty
             </h2>
 
-            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-neutral-500">
-              Discover something you love and save it here for
-              later.
+            <p className="mx-auto mt-1.5 max-w-sm text-[13px] leading-5 text-neutral-500">
+              Browse the collection and select the
+              heart on any product you want to save
+              for later.
             </p>
 
-            <a
+            <Link
               href="/shop"
-              className="mt-7 inline-flex rounded-full bg-neutral-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800"
+              className="mt-5 inline-flex items-center gap-2 rounded bg-neutral-950 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-neutral-800"
             >
+              <ShoppingBag className="h-3.5 w-3.5" />
               Explore Products
-            </a>
-          </div>
+            </Link>
+          </section>
         ) : (
-          <div className="grid grid-cols-2 gap-4 py-10 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                isWishlisted
-              />
-            ))}
-          </div>
+          <section className="rounded border border-neutral-200 bg-white">
+            <div className="flex flex-col gap-2 border-b border-neutral-200 px-5 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
+                  Your Favourites
+                </p>
+
+                <h2 className="mt-1 text-lg font-medium tracking-[-0.02em] text-neutral-950">
+                  Saved Products
+                </h2>
+              </div>
+
+              <p className="text-[11px] text-neutral-500">
+                {products.length}{" "}
+                {products.length === 1
+                  ? "item"
+                  : "items"}
+              </p>
+            </div>
+
+            <div className="p-5 sm:p-6">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 md:gap-x-5 xl:grid-cols-5">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    isWishlisted
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
         )}
-      </Container>
-    </main>
+      </div>
+    </AccountShell>
   );
 }

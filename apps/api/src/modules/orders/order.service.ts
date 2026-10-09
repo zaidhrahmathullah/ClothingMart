@@ -1,5 +1,9 @@
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../lib/app-error.js";
+import {
+  getEffectivePrice,
+} from "../../lib/product-price.js";
+
 
 export async function createOrder(
   userId: string,
@@ -89,7 +93,7 @@ export async function createOrder(
         );
       }
 
-      const unitPrice = Number(variant.price);
+      const unitPrice = getEffectivePrice(variant);
 
       const itemSubtotal =
         unitPrice * item.quantity;
@@ -101,7 +105,7 @@ export async function createOrder(
         productName: variant.product.name,
         variantDescription:
           `${variant.color} / ${variant.size}`,
-        unitPrice: variant.price,
+        unitPrice: unitPrice.toFixed(2),
         quantity: item.quantity,
         subtotal: itemSubtotal.toFixed(2),
       });

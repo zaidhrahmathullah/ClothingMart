@@ -80,16 +80,28 @@ model AuthSession {
 
 model Category {
   id          String  @id @default(uuid())
+  parentId    String?
+
   name        String
   slug        String  @unique
   description String?
-  imageUrl    String?
-  isActive    Boolean @default(true)
+
+  cardImageUrl String? @map("imageUrl")
+
+  animationImageUrl String?
+  bannerImageUrl    String?
+
+  isActive Boolean @default(true)
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children Category[] @relation("CategoryHierarchy")
 
   products Product[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([parentId])
 }
 
 model Product {
@@ -133,8 +145,9 @@ model ProductVariant {
   sku       String  @unique
   size      String
   color     String
-  price     Decimal @db.Decimal(10, 2)
-  isActive  Boolean @default(true)
+  price           Decimal  @db.Decimal(10, 2)
+  discountedPrice Decimal? @db.Decimal(10, 2)
+  isActive        Boolean  @default(true)
 
   product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   inventory  Inventory?
@@ -192,6 +205,9 @@ model Address {
   id     String @id @default(uuid())
   userId String
 
+  label        String  @default("Home")
+  isDefault    Boolean @default(false)
+
   fullName     String
   phone        String
   addressLine1 String
@@ -208,6 +224,7 @@ model Address {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([userId, isDefault])
 }
 
 model Order {

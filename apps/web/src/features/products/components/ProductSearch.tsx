@@ -40,9 +40,9 @@ export default function ProductSearch() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="relative"
+      className="relative max-w-xl"
     >
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+      <Search className="absolute left-3 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-neutral-400" />
 
       <input
         value={value}
@@ -50,7 +50,7 @@ export default function ProductSearch() {
           setValue(event.target.value)
         }
         placeholder="Search products..."
-        className="w-full rounded-xl border border-neutral-300 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-neutral-950"
+        className="w-full rounded-md border border-neutral-300 bg-white py-2.5 pl-9 pr-3 text-[13px] outline-none transition-colors placeholder:text-neutral-400 focus:border-neutral-950"
       />
     </form>
   );

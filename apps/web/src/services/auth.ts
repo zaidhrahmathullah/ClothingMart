@@ -14,6 +14,18 @@ export type LoginData = {
   password: string;
 };
 
+export type UpdateProfileData = {
+  name?: string;
+  email?: string;
+};
+
+export type ChangePasswordData = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
+
+
 export async function register(
   data: RegisterData,
 ) {
@@ -59,4 +71,27 @@ export async function refreshSession() {
       method: "POST",
     },
   );
+}
+
+export async function updateProfile(
+  data: UpdateProfileData,
+) {
+  return apiFetch<AuthResponse>(
+    "/auth/profile",
+    {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    },
+  );
+}
+
+export async function changePassword(
+  data: ChangePasswordData,
+) {
+  return apiFetch<{
+    message: string;
+  }>("/auth/password", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
 }

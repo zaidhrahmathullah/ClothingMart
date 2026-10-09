@@ -48,6 +48,8 @@ export const productQuerySchema = z.object({
     .min(0)
     .optional(),
 
+  inStock: z.enum(["true", "false"]).optional(),
+
   sort: z
     .enum([
       "newest",

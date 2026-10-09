@@ -31,7 +31,8 @@ export default function ProductSort() {
     <select
       value={current}
       onChange={handleChange}
-      className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-950"
+      aria-label="Sort products"
+      className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-[13px] text-neutral-700 outline-none transition-colors focus:border-neutral-950"
     >
       <option value="newest">Newest</option>
       <option value="oldest">Oldest</option>

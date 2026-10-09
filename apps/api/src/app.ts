@@ -13,6 +13,7 @@ import adminRoutes from "./modules/admin/admin.routes.js";
 import paymentRoutes from "./modules/payments/payment.routes.js";
 
 import { uploadDirectory } from "./modules/admin/admin-upload.js";
+import { categoryUploadDirectory } from "./modules/admin/admin-category-upload.js";
 
 import { errorHandler } from "./middleware/error-handler.js";
 
@@ -126,6 +127,11 @@ app.use(cookieParser());
 app.use(
   "/uploads/products",
   express.static(uploadDirectory),
+);
+
+app.use(
+  "/uploads/categories",
+  express.static(categoryUploadDirectory),
 );
 
 

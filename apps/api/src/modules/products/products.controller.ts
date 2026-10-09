@@ -3,6 +3,7 @@ import { parseQuery } from "../../lib/validation.js";
 import {
   getProductBySlug,
   getProducts,
+  getProductFacets,
 } from "./products.service.js";
 import { productQuerySchema } from "./product.validation.js";
 
@@ -16,6 +17,23 @@ export async function listProducts(
   );
 
   const result = await getProducts(query);
+
+  res.json({
+    success: true,
+    data: result,
+  });
+}
+
+export async function listProductFacets(
+  req: Request,
+  res: Response,
+) {
+  const category =
+    typeof req.query.category === "string"
+      ? req.query.category.trim()
+      : undefined;
+
+  const result = await getProductFacets(category);
 
   res.json({
     success: true,
