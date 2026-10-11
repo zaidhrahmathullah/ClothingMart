@@ -12,7 +12,7 @@ import wishlistRoutes from "./modules/wishlist/wishlist.routes.js";
 import adminRoutes from "./modules/admin/admin.routes.js";
 import paymentRoutes from "./modules/payments/payment.routes.js";
 
-import { uploadDirectory } from "./modules/admin/admin-upload.js";
+import { uploadDirectory } from "./modules/admin/admin-product-upload.js";
 import { categoryUploadDirectory } from "./modules/admin/admin-category-upload.js";
 
 import { errorHandler } from "./middleware/error-handler.js";

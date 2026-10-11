@@ -3,10 +3,11 @@ import { authenticate, requireRole } from "../../middleware/auth.js";
 import { UserRole } from "../../generated/prisma/enums.js";
 import { AppError } from "../../lib/app-error.js";
 import * as controller from "./admin.controller.js";
-import { uploadProductImagesController } from "./admin-upload.controller.js";
-import { productImageUpload } from "./admin-upload.js";
+import { uploadProductImagesController } from "./admin-product-upload.controller.js";
+import { productImageUpload } from "./admin-product-upload.js";
 import { categoryImageUpload } from "./admin-category-upload.js";
 import { uploadCategoryImagesController } from "./admin-category-upload.controller.js";
+import { validateUploadedImages } from "./admin-image-validation.js";
 
 const router = Router();
 router.use(authenticate, requireRole(UserRole.ADMIN));
@@ -47,16 +48,7 @@ function handleCategoryImageUpload(
 }
 
 router.get("/dashboard", controller.getDashboard);
-router.post(
-	"/uploads/product-images",
-	handleProductImageUpload,
-	uploadProductImagesController,
-);
-router.post(
-  "/uploads/category-images",
-  handleCategoryImageUpload,
-  uploadCategoryImagesController,
-);
+
 router.get("/products", controller.listProducts);
 router.post("/products", controller.createProduct);
 router.get("/products/:productId", controller.getProduct);
@@ -80,5 +72,17 @@ router.post(
 );
 router.get("/customers", controller.listCustomers);
 router.get("/customers/:customerId", controller.getCustomer);
+router.post(
+  "/uploads/product-images",
+  handleProductImageUpload,
+  validateUploadedImages,
+  uploadProductImagesController,
+);
+router.post(
+  "/uploads/category-images",
+  handleCategoryImageUpload,
+  validateUploadedImages,
+  uploadCategoryImagesController,
+);
 
 export default router;

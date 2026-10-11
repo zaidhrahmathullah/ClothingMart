@@ -1,3 +1,4 @@
+
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -7,10 +8,6 @@ export const categoryUploadDirectory = path.resolve(
   process.cwd(),
   "uploads/categories",
 );
-
-fs.mkdirSync(categoryUploadDirectory, {
-  recursive: true,
-});
 
 const extensionByMimeType: Record<string, string> = {
   "image/jpeg": ".jpg",
@@ -23,7 +20,17 @@ const allowedMimeTypes = new Set(
   Object.keys(extensionByMimeType),
 );
 
-const storage = multer.diskStorage({
+const storageProvider = process.env.STORAGE_PROVIDER ?? "local";
+
+if (!["local", "supabase"].includes(storageProvider)) {
+  throw new Error("Invalid STORAGE_PROVIDER");
+}
+
+if (storageProvider === "local") {
+  fs.mkdirSync(categoryUploadDirectory, { recursive: true });
+}
+
+const localStorage = multer.diskStorage({
   destination: (_req, _file, callback) => {
     callback(null, categoryUploadDirectory);
   },
@@ -31,15 +38,15 @@ const storage = multer.diskStorage({
   filename: (_req, file, callback) => {
     const extension = extensionByMimeType[file.mimetype];
 
-    callback(
-      null,
-      `${crypto.randomUUID()}${extension}`,
-    );
+    callback(null, `${crypto.randomUUID()}${extension}`);
   },
 });
 
 export const categoryImageUpload = multer({
-  storage,
+  storage:
+    storageProvider === "supabase"
+      ? multer.memoryStorage()
+      : localStorage,
 
   limits: {
     fileSize: 3 * 1024 * 1024,
