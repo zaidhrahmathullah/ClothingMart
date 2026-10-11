@@ -1,8 +1,9 @@
+
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
+
   images: {
     remotePatterns: [
       {
@@ -12,6 +13,16 @@ const nextConfig: NextConfig = {
         pathname: "/uploads/**",
       },
     ],
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: "/api/v1/:path*",
+        destination:
+          "https://clothingmart-api.onrender.com/api/v1/:path*",
+      },
+    ];
   },
 };
 
