@@ -13,22 +13,34 @@ import {
 
 import type { AuthenticatedRequest } from "../../middleware/auth.js";
 
-const isProduction =
-  process.env.NODE_ENV === "production";
+
+const isProduction = process.env.NODE_ENV === "production";
+
+const cookieSameSite = isProduction ? "none" : "lax";
 
 const accessCookieOptions = {
   httpOnly: true,
   secure: isProduction,
-  sameSite: "lax" as const,
+  sameSite: cookieSameSite,
+  path: "/",
   maxAge: 15 * 60 * 1000,
-};
+} as const;
 
 const refreshCookieOptions = {
   httpOnly: true,
   secure: isProduction,
-  sameSite: "lax" as const,
+  sameSite: cookieSameSite,
+  path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000,
-};
+} as const;
+
+const clearCookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: cookieSameSite,
+  path: "/",
+} as const;
+
 
 export async function registerUser(
   req: AuthenticatedRequest,
@@ -133,8 +145,8 @@ export async function logoutUser(
   }
 
   res
-    .clearCookie("accessToken")
-    .clearCookie("refreshToken")
+    .clearCookie("accessToken", clearCookieOptions)
+    .clearCookie("refreshToken", clearCookieOptions)
     .json({
       success: true,
       data: {
