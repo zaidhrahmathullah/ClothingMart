@@ -1,60 +1,140 @@
 # ClothingMart
 
-A full-stack e-commerce application built with Next.js, Express, TypeScript, PostgreSQL and Prisma.
+**A full-stack e-commerce platform built with Next.js, React, Express, TypeScript, PostgreSQL, and Prisma.**
 
-ClothingMart includes a customer storefront, administrative management features and an integrated PayPal Sandbox checkout and refund workflow.
+ClothingMart is a publicly deployed e-commerce portfolio project featuring a customer storefront, administrative management system, and PayPal Sandbox payment integration.
 
-## Tech Stack
+The project demonstrates full-stack application development, REST API design, database modeling, secure authentication, payment processing, and cloud deployment.
 
-Layer - Technologies
-Frontend - Next.js 16, React 19, TypeScript, Tailwind CSS 4
-Backend - Node.js, Express 5, TypeScript, Zod
-Database - PostgreSQL, Prisma 7
-Authentication - JWT access and refresh tokens using cookies
-Payments - PayPal Sandbox, PayPal JavaScript SDK
-Architecture - npm workspaces monorepo
+### Live Demo
 
+**Website:** https://clothingmart.vercel.app
+
+**Source Code:** https://github.com/zaidhrahmathullah/ClothingMart
+
+> **Payment Notice:** ClothingMart currently supports PayPal Sandbox transactions for demonstration and testing. Real-money payments are not enabled.
 
 ## Features
 
 ### Customer Storefront
 
-- Product catalogue and category browsing
-- Product variants and images
+- Responsive product catalogue and category navigation
+- Product details, images, and variants
 - Shopping cart and wishlist
-- Customer authentication and address management
+- Customer registration and login
+- Profile and shipping address management
 - Checkout and order history
-- PayPal Sandbox checkout with eligible PayPal and card payment options
-- LKR storefront pricing with currency conversion for PayPal transactions
+- PayPal Sandbox checkout
+- LKR storefront pricing with exchange-rate conversion for PayPal transactions
 
 ### Administration
 
-- Product and category management
+- Product creation, editing, and management
+- Category and subcategory management
+- Product image uploads
 - Inventory management
 - Customer and order management
-- Payment and refund management
+- Payment monitoring and refund management
+- Role-based access control
 
-### Payment Architecture
+### Payment Processing
 
-- Shared payment-provider contract and registry
-- PayPal-specific implementation isolated from shared payment logic
-- Payment state transitions and order synchronization
-- Webhook verification and event replay protection
-- Payment creation and capture recovery
-- Refund processing with durable claims and idempotency safeguards
-- Inventory and cart finalization after successful payment
+- Modular payment-provider architecture
+- PayPal order creation and capture
+- Payment status management and order synchronization
+- PayPal webhook verification
+- Webhook replay protection
+- Payment creation idempotency
+- Payment capture recovery
+- Cancellation and failure handling
+- Refund processing
+- Inventory and cart finalization following successful payment
 
-PayPal is the currently implemented payment provider. The architecture supports introducing additional providers in the future; PayHere and Stripe integrations are not currently implemented.
+The payment architecture separates shared business logic from provider-specific integrations, allowing additional gateways to be implemented in the future.
 
+**Currently implemented:** PayPal Sandbox.
+
+**Not implemented:** PayHere and Stripe.
+
+## Technology Stack
+
+Layer - Technologies
+
+Frontend - Next.js 16, React 19, TypeScript, Tailwind CSS 4
+Backend - Node.js, Express 5, TypeScript, Zod
+Database - PostgreSQL, Prisma 7
+Authentication - JWT access and refresh tokens, HTTP-only cookies
+Payments - PayPal Sandbox, PayPal JavaScript SDK
+Image Storage - Supabase Storage
+Frontend Hosting - Vercel
+Backend Hosting - Render
+Architecture - npm workspaces monorepo
+
+## System Architecture
+
+ClothingMart uses a monorepo containing two independently deployable applications.
+
+Customer / Administrator
+          |
+          v
+  Next.js Frontend
+     (Vercel)
+          |
+          v
+   Express REST API
+       (Render)
+          |
+          +---- PostgreSQL / Prisma
+          |
+          +---- Supabase Storage
+          |
+          +---- PayPal Sandbox API
+          |
+          +---- Exchange-Rate Service
+
+
+The frontend communicates with the Express REST API for authentication, catalogue management, cart operations, checkout, orders, and administrative features.
+
+The backend manages business logic, database operations, payment verification, and external service integrations.
+
+## Authentication and Security
+
+ClothingMart implements cookie-based JWT authentication with separate access and refresh tokens.
+
+Security-related features include:
+
+- HTTP-only authentication cookies
+- Access and refresh token separation
+- Refresh-token rotation
+- Role-based authorization for administrative operations
+- Backend validation using Zod
+- Server-side payment verification
+- Webhook verification and replay protection
+- Payment idempotency safeguards
+- Environment-based credential management
+
+Automatic restoration of expired sessions across all navigation scenarios remains a planned improvement.
+
+## Payment Architecture
+
+The payment module separates common payment operations from provider-specific implementations.
+
+The backend is responsible for creating PayPal orders, capturing and verifying payments, synchronizing payment and order states, handling webhook events, and processing refunds.
+
+The system includes safeguards against duplicate payment creation, repeated webhook processing, and inconsistent payment states.
+
+Storefront prices are maintained in LKR. PayPal transaction amounts are converted using the configured exchange-rate service.
+
+**PayPal Sandbox is the only currently implemented payment provider.** Production payment activation requires additional configuration and verification.
 
 ## Project Structure
 
 ClothingMart/
 ├── apps/
-│   ├── api/               # Express backend
+│   ├── api/
 │   │   └── src/
 │   │       └── modules/
-│   └── web/               # Next.js frontend
+│   └── web/
 │       └── src/
 ├── prisma/
 │   ├── migrations/
@@ -69,57 +149,57 @@ ClothingMart/
 
 ### Prerequisites
 
-- Node.js and npm compatible with the installed dependencies
+- Node.js and npm compatible with the project dependencies
 - PostgreSQL
 - PayPal Developer Sandbox credentials
-- An exchange-rate API key for the configured exchange-rate service
+- Credentials for the configured exchange-rate service
+- Supabase configuration if using cloud image storage
 
-### 1. Install dependencies
+### 1. Clone the Repository
 
-From the project root:
+git clone https://github.com/zaidhrahmathullah/ClothingMart.git
+cd ClothingMart
+
+
+### 2. Install Dependencies
 
 npm install
 
 
-### 2. Configure environment variables
+### 3. Configure Environment Variables
 
-Create these local files using the provided examples:
+Use the environment templates where provided:
 
-apps/api/.env.example  →  apps/api/.env
-apps/web/.env.example  →  apps/web/.env.local
+apps/api/.env.example → apps/api/.env
+apps/web/.env.example → apps/web/.env.local
 
 
-Update the values for your local environment.
+Configure the database connection, JWT secrets, payment credentials, storage configuration, and other required environment variables.
 
-The backend configuration includes database connectivity, authentication secrets, PayPal credentials, webhook configuration and exchange-rate settings.
+Never commit real credentials or local environment files.
 
-Never commit real environment files or API credentials.
-
-### 3. Prepare the database
+### 4. Prepare the Database
 
 Create the PostgreSQL database specified by `DATABASE_URL`.
 
-From the project root, run:
+From the project root:
 
 npx prisma generate --config prisma7.config.ts
 npx prisma migrate deploy --config prisma7.config.ts
 
 
-The Prisma configuration reads the database connection from `apps/api/.env` during local development.
-
-### 4. Start the backend
+### 5. Start the Backend
 
 npm run dev:backend
 
 
-Default local API address:
+Default API URL:
 
 http://localhost:4000/api/v1
 
+### 6. Start the Frontend
 
-### 5. Start the frontend
-
-In another terminal:
+In a separate terminal:
 
 npm run dev:frontend
 
@@ -128,72 +208,91 @@ Open:
 
 http://localhost:3000
 
+**Local configuration note:** The frontend includes an API rewrite configured for the deployed backend. Adjust the rewrite for local backend testing if necessary.
 
 ## Available Scripts
 
-Run these commands from the project root:
+Run these commands from the repository root.
 
-Command - Purpose
+Command - Description
 `npm run dev:frontend` - Start the Next.js development server
 `npm run dev:backend` - Start the Express development server
 `npm run build:frontend` - Build the frontend
 `npm run build:backend` - Compile the backend
 `npm run build` - Build both applications
-`npm run start:frontend` - Start the production-built frontend
+`npm run start:frontend` - Start the production frontend
 `npm run start:backend` - Start the compiled backend
-`npm test --workspace apps/api` - Run the configured backend payment regression tests
-
-
-## PayPal Sandbox
-
-ClothingMart uses PayPal Sandbox for development and payment testing.
-
-The backend creates and captures PayPal orders. The frontend uses the PayPal JavaScript SDK to display eligible checkout options.
-
-The application stores original ClothingMart amounts in LKR and uses the configured exchange-rate service for PayPal transaction amounts.
-
-Webhook processing, payment synchronization, cancellation handling, recovery and refund operations are handled by the backend.
-
-Production payment activation requires separate production credentials, deployment configuration and verification. The presence of a live-mode configuration option does not mean that live payments are enabled.
-
-
-## Security and Configuration
-
-- Keep authentication secrets and provider credentials server-side.
-- Do not expose PayPal client secrets through frontend environment variables.
-- Use the provided `.env.example` files as configuration templates.
-- PayPal live-mode activation has an explicit safeguard.
-- Destructive demo seeding must not be enabled against production databases.
-- Configure appropriate frontend origins and HTTPS when deploying.
-
+`npm test --workspace apps/api` - Run backend payment regression tests
+`npm run test:categories --workspace apps/api` - Run category tests
 
 ## Testing
 
-The backend contains automated tests covering payment configuration, webhook handling, order synchronization, cancellation, capture recovery, creation idempotency and refunds.
+The backend includes automated regression tests covering:
 
-Run:
+- PayPal configuration
+- Webhook processing
+- Payment and order synchronization
+- Payment cancellation
+- Capture recovery
+- Payment creation idempotency
+- Refund processing
+- Order finalization
+- PayPal provider behavior
+
+Run backend tests:
 
 npm test --workspace apps/api
 
 
-Check both applications:
+Build both applications:
 
 npm run build
 
 
-Sandbox payment testing should also be performed before any production deployment.
+PayPal Sandbox checkout, order processing, administrative operations, and refunds should also be verified through manual end-to-end testing.
 
+## Deployment
+
+ClothingMart is publicly deployed using:
+
+- Vercel: Next.js frontend
+- Render: Express backend
+- Supabase: PostgreSQL database and product image storage
+
+The live storefront is available at:
+
+https://clothingmart.vercel.app
+
+The deployed website is a portfolio demonstration. Payment transactions use PayPal Sandbox rather than live payment processing.
+
+## Engineering Highlights
+
+### Modular Payment Integration
+
+Implemented a provider abstraction that keeps PayPal-specific operations separate from shared payment logic, supporting future payment gateway integrations.
+
+### Payment Reliability
+
+Designed payment state transitions, webhook replay protection, idempotency safeguards, and recovery mechanisms to reduce duplicate operations and inconsistent order states.
+
+### Full-Stack Deployment
+
+Deployed the frontend and backend independently, integrating hosted database services, image storage, and external payment APIs.
+
+### Authentication and Authorization
+
+Implemented JWT-based authentication, refresh-token rotation, protected API endpoints, and role-based administrative access.
 
 ## Project Status
 
-Active Development — Payment Integration Milestone Completed
+Publicly Deployed — Portfolio Demonstration
 
-ClothingMart is an evolving full-stack e-commerce portfolio project.
+The customer storefront, administrative features, and PayPal Sandbox payment workflow have been implemented.
 
-The PayPal Sandbox payment integration is implemented and tested, including checkout, capture verification, webhook processing, refunds, idempotency, and order finalization.
+The project remains open to improvements, including session restoration, additional payment providers, performance optimization, and further automated testing.
 
-Both frontend and backend production builds pass, alongside 62 automated backend tests.
+PayPal Live payments are not enabled.
 
-Additional platform improvements are planned before the final deployment release.
+---
 
-Note: PayPal Live payments and public production deployment have not yet been activated.
+Built as a full-stack software engineering portfolio project.
