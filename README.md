@@ -1,18 +1,98 @@
+
 # ClothingMart
 
-**A full-stack e-commerce platform built with Next.js, React, Express, TypeScript, PostgreSQL, and Prisma.**
+### Full-Stack E-Commerce Platform
 
-ClothingMart is a publicly deployed e-commerce portfolio project featuring a customer storefront, administrative management system, and PayPal Sandbox payment integration.
+A full-stack e-commerce application built with **Next.js, React, Express, TypeScript, PostgreSQL, and Prisma**, featuring a responsive customer storefront, administrative management system, and PayPal Sandbox payment integration.
 
-The project demonstrates full-stack application development, REST API design, database modeling, secure authentication, payment processing, and cloud deployment.
+ClothingMart demonstrates practical software engineering skills across frontend development, REST API design, database modeling, authentication, payment processing, and cloud deployment.
 
-### Live Demo
+**[Live Demo](https://clothingmart.vercel.app/)** · **[Source Code](https://github.com/zaidhrahmathullah/ClothingMart)** · **[Developer Portfolio](https://zaidhrahmathullah.dev/)**
 
-**Website:** https://clothingmart.vercel.app
+> **Payment Notice**
+>
+> ClothingMart uses PayPal Sandbox for demonstration and testing. Real-money payments are not enabled.
 
-**Source Code:** https://github.com/zaidhrahmathullah/ClothingMart
+---
 
-> **Payment Notice:** ClothingMart currently supports PayPal Sandbox transactions for demonstration and testing. Real-money payments are not enabled.
+## Contents
+
+- [Application Preview](#application-preview)
+- [Engineering Highlights](#engineering-highlights)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [System Architecture](#system-architecture)
+- [Authentication and Security](#authentication-and-security)
+- [Payment Architecture](#payment-architecture)
+- [Project Structure](#project-structure)
+- [Local Development](#local-development)
+- [Available Scripts](#available-scripts)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Project Status](#project-status)
+
+---
+
+## Application Preview
+
+ClothingMart provides a complete shopping experience, from product discovery and account management to checkout and order processing.
+
+
+### Customer Storefront
+
+<img width="1365" height="597" alt="cover" src="https://github.com/user-attachments/assets/7a1bcc41-5635-49e5-88ec-dd696722d248" />
+
+
+### Product Browsing
+
+<img width="1365" height="597" alt="products" src="https://github.com/user-attachments/assets/8f1ac822-3c46-4be4-924d-e99baff89249" />
+
+
+### Checkout and Payments
+
+<img width="1365" height="601" alt="checkout" src="https://github.com/user-attachments/assets/44520433-e37e-4c06-a277-f8c9cad1376b" />
+
+
+### Administration
+
+<img width="1365" height="599" alt="admin" src="https://github.com/user-attachments/assets/bc4516ea-3291-4931-90f5-c4a8e5d2c4c1" />
+
+
+**Explore the application:** [clothingmart.vercel.app](https://clothingmart.vercel.app/)
+
+---
+
+## Engineering Highlights
+
+ClothingMart was developed to explore the engineering challenges involved in building and deploying a full-stack commerce application.
+
+### 1. Modular Payment Architecture
+
+Designed a payment-provider abstraction that separates shared payment business logic from provider-specific implementations.
+
+PayPal Sandbox is currently integrated, while the architecture supports adding other gateways without restructuring the core payment workflow.
+
+### 2. Reliable Payment Processing
+
+Implemented payment state transitions and safeguards to handle real-world payment scenarios, including:
+
+- Duplicate payment creation
+- Repeated webhook deliveries
+- Payment capture recovery
+- Cancellation and failure handling
+- Payment and order synchronization
+- Inventory and cart finalization
+- Refund processing
+
+### 3. Authentication and Authorization
+
+Built a JWT-based authentication system with access and refresh tokens, HTTP-only cookies, refresh-token rotation, protected API endpoints, and role-based administrative access.
+
+### 4. Independent Full-Stack Deployment
+
+Deployed the Next.js frontend and Express backend independently, integrating hosted PostgreSQL, cloud image storage, and external payment services.
+
+---
 
 ## Features
 
@@ -41,7 +121,8 @@ The project demonstrates full-stack application development, REST API design, da
 
 - Modular payment-provider architecture
 - PayPal order creation and capture
-- Payment status management and order synchronization
+- Payment status management
+- Payment and order synchronization
 - PayPal webhook verification
 - Webhook replay protection
 - Payment creation idempotency
@@ -50,52 +131,90 @@ The project demonstrates full-stack application development, REST API design, da
 - Refund processing
 - Inventory and cart finalization following successful payment
 
-The payment architecture separates shared business logic from provider-specific integrations, allowing additional gateways to be implemented in the future.
+**Implemented payment provider:** PayPal Sandbox
 
-**Currently implemented:** PayPal Sandbox.
+**Not implemented:** PayHere and Stripe
 
-**Not implemented:** PayHere and Stripe.
+---
 
 ## Technology Stack
 
-Layer - Technologies
+| Layer | Technologies |
+|---|---|
+| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS 4 |
+| Backend | Node.js, Express 5, TypeScript, Zod |
+| Database | PostgreSQL, Prisma 7 |
+| Authentication | JWT access and refresh tokens, HTTP-only cookies |
+| Payments | PayPal Sandbox, PayPal JavaScript SDK |
+| Image Storage | Supabase Storage |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render |
+| Database Hosting | Supabase |
+| Architecture | npm workspaces monorepo |
 
-Frontend - Next.js 16, React 19, TypeScript, Tailwind CSS 4
-Backend - Node.js, Express 5, TypeScript, Zod
-Database - PostgreSQL, Prisma 7
-Authentication - JWT access and refresh tokens, HTTP-only cookies
-Payments - PayPal Sandbox, PayPal JavaScript SDK
-Image Storage - Supabase Storage
-Frontend Hosting - Vercel
-Backend Hosting - Render
-Architecture - npm workspaces monorepo
+---
 
 ## System Architecture
 
-ClothingMart uses a monorepo containing two independently deployable applications.
+ClothingMart follows a full-stack monorepo architecture containing two independently deployable applications.
 
-Customer / Administrator
-          |
-          v
-  Next.js Frontend
-     (Vercel)
-          |
-          v
-   Express REST API
-       (Render)
-          |
-          +---- PostgreSQL / Prisma
-          |
-          +---- Supabase Storage
-          |
-          +---- PayPal Sandbox API
-          |
-          +---- Exchange-Rate Service
+```text
+                Customer / Administrator
+                           |
+                           v
+                 +--------------------+
+                 |  Next.js Frontend  |
+                 |       Vercel       |
+                 +--------------------+
+                           |
+                           | REST API
+                           v
+                 +--------------------+
+                 |   Express Backend  |
+                 |       Render       |
+                 +--------------------+
+                           |
+             +-------------+-------------+
+             |             |             |
+             v             v             v
+       PostgreSQL      Supabase       External
+        + Prisma       Storage        Services
+                                         |
+                                  +------+------+
+                                  |             |
+                                  v             v
+                               PayPal       Exchange
+                               Sandbox      Rate API
+```
 
+### Frontend Responsibilities
 
-The frontend communicates with the Express REST API for authentication, catalogue management, cart operations, checkout, orders, and administrative features.
+The Next.js application provides:
 
-The backend manages business logic, database operations, payment verification, and external service integrations.
+- Responsive customer-facing interfaces
+- Product browsing and search-related interactions
+- Shopping cart and wishlist interfaces
+- Authentication and account management interfaces
+- Checkout and payment interactions
+- Administrative management interfaces
+
+### Backend Responsibilities
+
+The Express REST API manages:
+
+- Authentication and authorization
+- Product and category operations
+- Shopping cart and wishlist operations
+- Address and order management
+- Inventory-related business logic
+- Payment creation, capture, and verification
+- Webhook handling
+- Refund processing
+- Database access through Prisma
+
+This separation keeps application interfaces independent from backend business logic and external integrations.
+
+---
 
 ## Authentication and Security
 
@@ -107,47 +226,125 @@ Security-related features include:
 - Access and refresh token separation
 - Refresh-token rotation
 - Role-based authorization for administrative operations
-- Backend validation using Zod
+- Backend request validation using Zod
 - Server-side payment verification
-- Webhook verification and replay protection
+- PayPal webhook verification
+- Webhook replay protection
 - Payment idempotency safeguards
 - Environment-based credential management
 
-Automatic restoration of expired sessions across all navigation scenarios remains a planned improvement.
+**Planned improvement:** Automatic restoration of expired sessions across all navigation scenarios.
+
+---
 
 ## Payment Architecture
 
-The payment module separates common payment operations from provider-specific implementations.
+The payment system separates common business operations from payment-provider implementations.
+
+### Payment Flow
+
+```text
+Customer Checkout
+       |
+       v
+Create Application Order
+       |
+       v
+Create Payment Record
+       |
+       v
+PayPal Sandbox Order
+       |
+       v
+Customer Approval
+       |
+       v
+Backend Capture and Verification
+       |
+       v
+Payment / Order Synchronization
+       |
+       v
+Inventory and Cart Finalization
+       |
+       v
+Order Confirmation
+```
 
 The backend is responsible for creating PayPal orders, capturing and verifying payments, synchronizing payment and order states, handling webhook events, and processing refunds.
 
-The system includes safeguards against duplicate payment creation, repeated webhook processing, and inconsistent payment states.
+### Reliability Safeguards
 
-Storefront prices are maintained in LKR. PayPal transaction amounts are converted using the configured exchange-rate service.
+**Payment State Management**
 
-**PayPal Sandbox is the only currently implemented payment provider.** Production payment activation requires additional configuration and verification.
+Payment state transitions are validated to prevent inconsistent payment updates.
+
+**Idempotency**
+
+Payment creation includes safeguards against duplicate requests and repeated processing.
+
+**Webhook Protection**
+
+PayPal webhook events are verified, and replay protection helps prevent duplicate event handling.
+
+**Capture Recovery**
+
+Recovery logic supports situations where a payment capture succeeds but the application does not immediately receive or complete the expected response.
+
+**Order Finalization**
+
+Payment success is coordinated with order state changes, inventory updates, and cart finalization.
+
+### Currency Handling
+
+Storefront prices are maintained in **Sri Lankan Rupees (LKR)**.
+
+PayPal transaction amounts are converted using the configured exchange-rate service.
+
+### Supported Providers
+
+| Provider | Status |
+|---|---|
+| PayPal Sandbox | Implemented |
+| PayPal Live | Not enabled |
+| PayHere | Not implemented |
+| Stripe | Not implemented |
+
+Production payment activation requires additional configuration and verification.
+
+---
 
 ## Project Structure
 
+```text
 ClothingMart/
 ├── apps/
 │   ├── api/
 │   │   └── src/
 │   │       └── modules/
+│   │
 │   └── web/
 │       └── src/
+│
 ├── prisma/
 │   ├── migrations/
 │   ├── schema.prisma
 │   └── seed.ts
+│
 ├── prisma7.config.ts
 ├── package.json
 └── README.md
+```
 
+The monorepo uses npm workspaces to manage the frontend and backend applications.
+
+---
 
 ## Local Development
 
 ### Prerequisites
+
+Ensure the following are available:
 
 - Node.js and npm compatible with the project dependencies
 - PostgreSQL
@@ -157,73 +354,120 @@ ClothingMart/
 
 ### 1. Clone the Repository
 
+```bash
 git clone https://github.com/zaidhrahmathullah/ClothingMart.git
 cd ClothingMart
-
+```
 
 ### 2. Install Dependencies
 
+```bash
 npm install
-
+```
 
 ### 3. Configure Environment Variables
 
-Use the environment templates where provided:
+Use the environment templates where provided.
 
-apps/api/.env.example → apps/api/.env
-apps/web/.env.example → apps/web/.env.local
+**Backend:**
 
+```text
+apps/api/.env.example
+       |
+       v
+apps/api/.env
+```
 
-Configure the database connection, JWT secrets, payment credentials, storage configuration, and other required environment variables.
+**Frontend:**
 
-Never commit real credentials or local environment files.
+```text
+apps/web/.env.example
+       |
+       v
+apps/web/.env.local
+```
+
+Configure the required environment variables for:
+
+- PostgreSQL database connection
+- JWT secrets
+- PayPal Sandbox credentials
+- Exchange-rate service
+- Supabase Storage
+- Frontend and backend URLs
+- Other configured integrations
+
+> Never commit actual credentials, access tokens, or local environment files.
 
 ### 4. Prepare the Database
 
 Create the PostgreSQL database specified by `DATABASE_URL`.
 
-From the project root:
+From the project root, generate the Prisma client:
 
+```bash
 npx prisma generate --config prisma7.config.ts
-npx prisma migrate deploy --config prisma7.config.ts
+```
 
+Apply the existing migrations:
+
+```bash
+npx prisma migrate deploy --config prisma7.config.ts
+```
 
 ### 5. Start the Backend
 
+```bash
 npm run dev:backend
-
+```
 
 Default API URL:
 
+```text
 http://localhost:4000/api/v1
+```
 
 ### 6. Start the Frontend
 
-In a separate terminal:
+Open another terminal and run:
 
+```bash
 npm run dev:frontend
-
+```
 
 Open:
 
+```text
 http://localhost:3000
+```
 
-**Local configuration note:** The frontend includes an API rewrite configured for the deployed backend. Adjust the rewrite for local backend testing if necessary.
+### Local API Configuration
+
+The frontend currently includes an API rewrite configured for the deployed backend.
+
+For local backend testing, adjust the rewrite to target the local API where necessary.
+
+This configuration is a known area for future improvement.
+
+---
 
 ## Available Scripts
 
-Run these commands from the repository root.
+Run these commands from the repository root unless otherwise indicated.
 
-Command - Description
-`npm run dev:frontend` - Start the Next.js development server
-`npm run dev:backend` - Start the Express development server
-`npm run build:frontend` - Build the frontend
-`npm run build:backend` - Compile the backend
-`npm run build` - Build both applications
-`npm run start:frontend` - Start the production frontend
-`npm run start:backend` - Start the compiled backend
-`npm test --workspace apps/api` - Run backend payment regression tests
-`npm run test:categories --workspace apps/api` - Run category tests
+| Command | Description |
+|---|---|
+| `npm run dev:frontend` | Start the Next.js development server |
+| `npm run dev:backend` | Start the Express development server |
+| `npm run build:frontend` | Build the frontend |
+| `npm run build:backend` | Compile the backend |
+| `npm run build` | Build both applications |
+| `npm run start:frontend` | Start the production frontend |
+| `npm run start:backend` | Start the compiled backend |
+| `npm test --workspace apps/api` | Run backend payment regression tests |
+| `npm run test:categories --workspace apps/api` | Run category tests |
+
+---
 
 ## Testing
 
@@ -239,59 +483,86 @@ The backend includes automated regression tests covering:
 - Order finalization
 - PayPal provider behavior
 
-Run backend tests:
+### Run Backend Tests
 
+```bash
 npm test --workspace apps/api
+```
 
+### Run Category Tests
 
-Build both applications:
+```bash
+npm run test:categories --workspace apps/api
+```
 
+### Build Both Applications
+
+```bash
 npm run build
+```
 
+### Manual Testing
 
-PayPal Sandbox checkout, order processing, administrative operations, and refunds should also be verified through manual end-to-end testing.
+The following workflows should also be verified through manual end-to-end testing:
+
+- Customer registration and login
+- Product browsing and cart management
+- PayPal Sandbox checkout
+- Order processing and status updates
+- Administrative product and inventory operations
+- Refund workflows
+- Payment cancellation and failure scenarios
+
+---
 
 ## Deployment
 
-ClothingMart is publicly deployed using:
+ClothingMart is publicly deployed using independently hosted frontend and backend applications.
 
-- Vercel: Next.js frontend
-- Render: Express backend
-- Supabase: PostgreSQL database and product image storage
+| Service | Responsibility |
+|---|---|
+| Vercel | Next.js frontend |
+| Render | Express REST API |
+| Supabase | PostgreSQL database |
+| Supabase Storage | Product image storage |
+| PayPal Sandbox | Payment demonstration and testing |
 
-The live storefront is available at:
+**Live Storefront:** https://clothingmart.vercel.app/
 
-https://clothingmart.vercel.app
+The deployed application is intended for portfolio demonstration and technical evaluation.
 
-The deployed website is a portfolio demonstration. Payment transactions use PayPal Sandbox rather than live payment processing.
+All payment transactions use PayPal Sandbox rather than live payment processing.
 
-## Engineering Highlights
-
-### Modular Payment Integration
-
-Implemented a provider abstraction that keeps PayPal-specific operations separate from shared payment logic, supporting future payment gateway integrations.
-
-### Payment Reliability
-
-Designed payment state transitions, webhook replay protection, idempotency safeguards, and recovery mechanisms to reduce duplicate operations and inconsistent order states.
-
-### Full-Stack Deployment
-
-Deployed the frontend and backend independently, integrating hosted database services, image storage, and external payment APIs.
-
-### Authentication and Authorization
-
-Implemented JWT-based authentication, refresh-token rotation, protected API endpoints, and role-based administrative access.
+---
 
 ## Project Status
 
-Publicly Deployed — Portfolio Demonstration
+**Publicly Deployed — Portfolio Demonstration**
 
 The customer storefront, administrative features, and PayPal Sandbox payment workflow have been implemented.
 
-The project remains open to improvements, including session restoration, additional payment providers, performance optimization, and further automated testing.
+### Future Improvements
+
+- More comprehensive session restoration
+- Additional payment gateway integrations
+- Performance optimization
+- Expanded automated testing
+- Further improvements to local development configuration
 
 PayPal Live payments are not enabled.
+
+---
+
+## Developer
+
+**Zaidh Rahmathullah**
+
+Aspiring Full-Stack Software Engineer based in Sri Lanka.
+
+- **Portfolio:** [zaidhrahmathullah.dev](https://zaidhrahmathullah.dev/)
+- **GitHub:** [github.com/zaidhrahmathullah](https://github.com/zaidhrahmathullah)
+- **LinkedIn:** [Zaidh Rahmathullah](https://www.linkedin.com/in/zaidh-rahmathullah-629048316/)
+- **Email:** [rahmathullah07zaidh@gmail.com](mailto:rahmathullah07zaidh@gmail.com)
 
 ---
 
